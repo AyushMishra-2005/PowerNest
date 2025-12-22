@@ -15,7 +15,6 @@ import { useAuth } from "@/context/AuthProvider"
 export default function NavSidebar() {
   const [open, setOpen] = useState(false)
   const { authUser } = useAuth();
-  console.log(authUser);
 
   const links = [
     {

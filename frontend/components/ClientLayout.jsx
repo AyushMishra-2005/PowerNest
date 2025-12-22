@@ -8,11 +8,13 @@ import {useRouter, usePathname} from 'next/navigation';
 const PUBLIC_ROUTES = ["/login", "/signup"];
 
 export default function ClientLayout({ children }) {
-  const { authUser } = useAuth();
+  const { authUser, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    if(loading) return;
+
     if(!authUser && !PUBLIC_ROUTES.includes(pathname)){
       router.replace("/login");
     }
@@ -21,7 +23,11 @@ export default function ClientLayout({ children }) {
       router.replace("/");
     }
 
-  });
+  }, [authUser, loading, pathname, router]);
+
+  if(loading){
+    return null;
+  }
 
 
   if (!authUser) {
