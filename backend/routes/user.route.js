@@ -8,7 +8,7 @@ const router = Router();
 
 router.post('/signup',verifyGoogleToken, validateOTP, signup);
 router.post('/login', verifyGoogleToken, validateOTP, login);
-router.post('/logout', secureRoute, logout);
+router.post('/logout', logout);
 router.post('/sendOTP', sendOtp);
 router.post('/verifyOTP', verifyOtp);
 
