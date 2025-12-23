@@ -12,19 +12,29 @@ import { motion } from "framer-motion"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { useAuth } from "@/context/AuthProvider"
 import {
-  Power
+  Power,
+  LayoutDashboard ,
+  Zap 
 } from "lucide-react"
 
 export default function NavSidebar() {
   const [open, setOpen] = useState(false)
   const { authUser } = useAuth();
+  console.log(authUser.user);
 
   const links = [
+    {
+      label: "Home",
+      href: "/",
+      icon: (
+        <Zap className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+      ),
+    },
     {
       label: "Dashboard",
       href: "/dashboard",
       icon: (
-        <IconBrandTabler className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+        <LayoutDashboard className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
       ),
     },
     {
