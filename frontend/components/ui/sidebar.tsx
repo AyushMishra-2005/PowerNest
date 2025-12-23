@@ -3,6 +3,10 @@ import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import {
+  Power
+} from "lucide-react"
+
 
 interface Links {
   label: string;
@@ -118,10 +122,10 @@ export const MobileSidebar = ({
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
@@ -136,12 +140,14 @@ export const MobileSidebar = ({
           "items-center justify-between",
           "bg-white dark:bg-neutral-950",
           "w-full border-b border-neutral-200 dark:border-neutral-800",
-          "fixed top-0 left-0 z-50" 
+          "fixed top-0 left-0 z-50"
         )}
         {...props}
       >
         <div className="flex items-center gap-2">
-          <div className="h-5 w-6 rounded bg-neutral-900 dark:bg-neutral-100" />
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center">
+            <Power className="h-5 w-5 text-white" />
+          </div>
           <span className="font-medium text-neutral-900 dark:text-neutral-100">
             PowerNest
           </span>
@@ -164,7 +170,7 @@ export const MobileSidebar = ({
               onClick={() => setOpen(false)}
               className="fixed inset-0 bg-black/50 z-40 md:hidden"
             />
-            
+
             {/* Sidebar Panel */}
             <motion.div
               initial={{ x: "-100%" }}
@@ -176,14 +182,16 @@ export const MobileSidebar = ({
                 "bg-white dark:bg-neutral-950 p-6",
                 "flex flex-col justify-between",
                 "border-r border-neutral-200 dark:border-neutral-800",
-                "md:hidden",  
+                "md:hidden",
                 className
               )}
             >
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-2">
-                    <div className="h-5 w-6 rounded bg-neutral-950 dark:bg-neutral-100" />
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center">
+                      <Power className="h-5 w-5 text-white" />
+                    </div>
                     <span className="font-medium text-neutral-900 dark:text-neutral-100">
                       PowerNest
                     </span>
@@ -214,7 +222,7 @@ export const SidebarLink = ({
   onClick?: () => void;
 }) => {
   const { open, animate } = useSidebar();
-  
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) {
       onClick();

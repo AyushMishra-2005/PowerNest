@@ -11,6 +11,9 @@ import {
 import { motion } from "framer-motion"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { useAuth } from "@/context/AuthProvider"
+import {
+  Power
+} from "lucide-react"
 
 export default function NavSidebar() {
   const [open, setOpen] = useState(false)
@@ -19,36 +22,35 @@ export default function NavSidebar() {
   const links = [
     {
       label: "Dashboard",
-      href: "/",
+      href: "/dashboard",
       icon: (
-        <IconBrandTabler className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
+        <IconBrandTabler className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
       ),
     },
     {
       label: "Profile",
       href: "/profile",
       icon: (
-        <IconUserBolt className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
+        <IconUserBolt className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
       ),
     },
     {
       label: "Settings",
       href: "/settings",
       icon: (
-        <IconSettings className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
+        <IconSettings className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
       ),
     },
     {
       label: "Logout",
       href: "/logout",
       icon: (
-        <IconArrowLeft className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
+        <IconArrowLeft className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
       ),
     },
   ]
 
   const handleLinkClick = () => {
-
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setOpen(false)
     }
@@ -56,12 +58,11 @@ export default function NavSidebar() {
 
   return (
     <Sidebar open={open} setOpen={setOpen}>
-      <SidebarBody className="justify-between gap-10 text-neutral-900 dark:text-neutral-100">
+      <SidebarBody className="justify-between gap-10">
         <div className="flex flex-col gap-2">
-          <div className={`hidden md:block ${!open ? "m-2 mb-0" : "mt-2"}`}>
+          <div className={`hidden md:block ${!open ? "m-2 ml-1 mb-0" : "mt-2"}`}>
             {open ? <Logo /> : <LogoIcon />}
           </div>
-
 
           <div className="mt-8 flex flex-col gap-2">
             {links.map((link, idx) => (
@@ -114,11 +115,13 @@ export default function NavSidebar() {
 
 const Logo = () => (
   <div className="flex items-center gap-2 px-2">
-    <div className="h-5 w-6 rounded bg-neutral-900 dark:bg-neutral-100" />
+    <div className="h-8 w-8 min-w-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center">
+      <Power className="h-5 w-5 text-white" />
+    </div>
     <motion.span
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="font-medium whitespace-pre text-neutral-900 dark:text-neutral-100"
+      className="font-medium whitespace-pre text-emerald-900 dark:text-emerald-400"
     >
       PowerNest
     </motion.span>
@@ -126,5 +129,7 @@ const Logo = () => (
 )
 
 const LogoIcon = () => (
-  <div className="h-5 w-6 rounded bg-neutral-900 dark:bg-neutral-100" />
+  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center">
+    <Power className="h-5 w-5 text-white" />
+  </div>
 )
