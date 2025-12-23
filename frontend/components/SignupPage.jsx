@@ -331,7 +331,7 @@ export function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-3 md:p-4 mt-12 md:mt-0 lg:mt-0">
-      <Card className="relative w-full max-w-4xl overflow-hidden bg-gray-50 dark:bg-neutral-950 shadow-xl h-[95vh] flex flex-col py-0">
+      <Card className="relative w-full max-w-4xl overflow-hidden bg-white dark:bg-black shadow-xl h-[95vh] flex flex-col py-0">
         <ShineBorder
           shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]}
           className="rounded-xl"
@@ -340,18 +340,18 @@ export function SignupPage() {
         {/* Two-column layout container */}
         <div className="flex flex-col lg:flex-row flex-grow h-full overflow-hidden">
           {/* Left Column - Profile Upload & Title */}
-          <div className="lg:w-2/5 p-6 md:p-4 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800 bg-gradient-to-br from-[#A07CFE]/5 to-[#FE8FB5]/5 flex-shrink-0">
+          <div className="lg:w-2/5 p-6 md:p-4 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 flex-shrink-0">
             <div className="w-full max-w-xs text-center">
               {/* Title */}
               <div className="mb-8">
-                <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#A07CFE] via-[#FE8FB5] to-[#FFBE7B] bg-clip-text text-transparent mb-2">
+                <CardTitle className="text-2xl md:text-3xl font-bold text-emerald-900 dark:text-emerald-400 mb-2">
                   Create Account
                 </CardTitle>
-                <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                <CardDescription className="text-sm text-gray-700 dark:text-gray-300">
                   Already have an account?{" "}
                   <Link
                     href="/login"
-                    className="text-[#A07CFE] hover:text-[#8b6ce0] font-medium hover:underline transition-colors"
+                    className="text-emerald-800 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 font-medium hover:underline transition-colors"
                   >
                     Sign in instead
                   </Link>
@@ -362,16 +362,16 @@ export function SignupPage() {
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <label htmlFor="profile-pic" className="cursor-pointer group">
-                    <Avatar className="w-28 h-28 md:w-32 md:h-32 border-4 border-[#A07CFE] bg-gradient-to-br from-[#A07CFE]/20 to-[#FE8FB5]/20 dark:from-[#A07CFE]/30 dark:to-[#FE8FB5]/30 group-hover:border-[#FE8FB5] transition-all duration-300 shadow-lg">
+                    <Avatar className="w-28 h-28 md:w-32 md:h-32 border-4 border-emerald-700 dark:border-emerald-400 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-800/30 group-hover:border-emerald-600 dark:group-hover:border-emerald-300 transition-all duration-300 shadow-lg">
                       {profilePic ? (
                         <AvatarImage src={profilePic} alt="Profile" className="object-cover" />
                       ) : (
-                        <AvatarFallback className="bg-gradient-to-br from-[#A07CFE] to-[#FE8FB5] text-white dark:text-gray-100 text-2xl">
+                        <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white dark:text-gray-100 text-2xl">
                           <Camera className="w-10 h-10" />
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <div className="absolute bottom-2 right-2 bg-gradient-to-br from-[#A07CFE] to-[#FE8FB5] text-white dark:text-gray-100 rounded-full p-2 border-4 border-gray-50 dark:border-neutral-950 group-hover:scale-110 transition-transform shadow-lg">
+                    <div className="absolute bottom-2 right-2 bg-gradient-to-br from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white dark:text-gray-100 rounded-full p-2 border-4 border-white dark:border-black group-hover:scale-110 transition-transform shadow-lg">
                       <Camera className="w-4 h-4" />
                     </div>
                   </label>
@@ -387,13 +387,13 @@ export function SignupPage() {
 
               {/* Upload Instructions */}
               <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
+                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">
                   Upload Profile Picture
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   Click on the camera icon to upload your photo
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                   Supports JPG, PNG, WEBP
                 </p>
               </div>
@@ -410,8 +410,8 @@ export function SignupPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Full Name Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium">
-                    <User className="w-4 h-4" />
+                  <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-300">
+                    <User className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     Full Name
                   </Label>
                   <Input
@@ -420,7 +420,7 @@ export function SignupPage() {
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`w-full h-10 text-sm ${errors.name ? "border-red-500" : ""}`}
+                    className={`w-full h-10 text-sm ${errors.name ? "border-red-500" : ""} text-gray-800 dark:text-gray-300`}
                     placeholder="Enter your full name"
                   />
                   {errors.name && (
@@ -430,8 +430,8 @@ export function SignupPage() {
 
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
-                    <Mail className="w-4 h-4" />
+                  <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-300">
+                    <Mail className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     Email
                   </Label>
                   <Input
@@ -440,7 +440,7 @@ export function SignupPage() {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full h-10 text-sm ${errors.email ? "border-red-500" : ""}`}
+                    className={`w-full h-10 text-sm ${errors.email ? "border-red-500" : ""} text-gray-800 dark:text-gray-300`}
                     placeholder="Enter your email"
                   />
                   {errors.email && (
@@ -450,7 +450,7 @@ export function SignupPage() {
 
                 {/* OTP Field */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Label className="text-sm font-medium text-gray-800 dark:text-gray-300">
                     Enter 6-digit OTP
                   </Label>
                   <div className="space-y-3">
@@ -466,7 +466,7 @@ export function SignupPage() {
                           onPaste={handleOtpPaste}
                           disabled={!otpSent}
                           className={`w-12 h-12 text-center text-lg font-semibold p-0 ${errors.otp ? "border-red-500" : ""
-                            } ${!otpSent ? "bg-gray-100 dark:bg-neutral-900 text-gray-400 cursor-not-allowed" : ""}`}
+                            } ${!otpSent ? "bg-gray-100 dark:bg-gray-900 text-gray-400 cursor-not-allowed" : "text-gray-800 dark:text-gray-300"}`}
                           maxLength={1}
                           inputMode="numeric"
                           autoComplete="one-time-code"
@@ -477,7 +477,7 @@ export function SignupPage() {
                       type="button"
                       onClick={handleSendOtp}
                       disabled={sendingOtp}
-                      className="w-full bg-gradient-to-r from-[#8b5cf6] to-[#f26ca7] hover:from-[#7c51e0] hover:to-[#e55b95] transition-all h-10 text-sm text-white"
+                      className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 dark:from-emerald-500 dark:via-emerald-400 dark:to-emerald-300 hover:from-emerald-800 hover:via-emerald-700 hover:to-emerald-600 dark:hover:from-emerald-600 dark:hover:via-emerald-500 dark:hover:to-emerald-400 transition-all h-10 text-sm text-white dark:text-gray-900 font-medium"
                     >
                       {sendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
                     </Button>
@@ -489,8 +489,8 @@ export function SignupPage() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium">
-                    <Lock className="w-4 h-4" />
+                  <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-300">
+                    <Lock className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     Password
                   </Label>
                   <div className="relative">
@@ -500,13 +500,13 @@ export function SignupPage() {
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={handleChange}
-                      className={`w-full h-10 text-sm pr-10 ${errors.password ? "border-red-500" : ""}`}
+                      className={`w-full h-10 text-sm pr-10 ${errors.password ? "border-red-500" : ""} text-gray-800 dark:text-gray-300`}
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -520,7 +520,7 @@ export function SignupPage() {
                 <Button
                   type="submit"
                   onClick={handleSubmit}
-                  className="w-full bg-gradient-to-r from-[#8b5cf6] via-[#f26ca7] to-[#ff9e6d] hover:from-[#7c51e0] hover:via-[#e55b95] hover:to-[#f08d5a] transition-all duration-300 text-white font-semibold text-sm h-11 shadow-md"
+                  className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 dark:from-emerald-500 dark:via-emerald-400 dark:to-emerald-300 hover:from-emerald-800 hover:via-emerald-700 hover:to-emerald-600 dark:hover:from-emerald-600 dark:hover:via-emerald-500 dark:hover:to-emerald-400 transition-all duration-300 text-white dark:text-gray-900 font-semibold text-sm h-11 shadow-md"
                 >
                   CREATE ACCOUNT
                 </Button>
@@ -531,7 +531,7 @@ export function SignupPage() {
                     <span className="w-full border-t border-gray-300 dark:border-gray-700" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-gray-50 dark:bg-neutral-950 px-3 text-gray-500 dark:text-gray-400">
+                    <span className="bg-white dark:bg-black px-3 text-gray-500 dark:text-gray-400">
                       OR
                     </span>
                   </div>
@@ -541,7 +541,7 @@ export function SignupPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors h-10 text-sm flex items-center justify-center"
+                  className="w-full border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors h-10 text-sm flex items-center justify-center text-gray-800 dark:text-gray-300"
                   onClick={handleGoogleSignup}
                 >
                   <Image
