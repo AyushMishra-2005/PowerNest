@@ -24,7 +24,7 @@ import server from "../envirnoment.js"
 import Image from "next/image.js"
 
 
-export function LoginPage () {
+export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
   const [sendingOtp, setSendingOtp] = useState(false)
@@ -282,7 +282,7 @@ export function LoginPage () {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-3 md:p-4 mt-12 md:mt-0 lg:mt-0">
-      <Card className="relative w-full max-w-4xl overflow-hidden bg-gray-50 dark:bg-neutral-950 shadow-xl h-[95vh] flex flex-col py-0">
+      <Card className="relative w-full max-w-4xl overflow-hidden bg-white dark:bg-black shadow-xl h-[95vh] flex flex-col py-0">
         <ShineBorder
           shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]}
           className="rounded-xl"
@@ -291,18 +291,18 @@ export function LoginPage () {
         {/* Two-column layout container */}
         <div className="flex flex-col lg:flex-row flex-grow h-full overflow-hidden">
 
-          {/* Left Column - Profile Upload & Title */}
-          <div className="lg:w-2/5 p-6 md:p-4 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800 bg-gradient-to-br from-[#A07CFE]/5 to-[#FE8FB5]/5 flex-shrink-0">
+          {/* Left Column - Welcome Section */}
+          <div className="lg:w-2/5 p-6 md:p-4 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 flex-shrink-0">
             <div className="w-full max-w-xs text-center">
               <div className="mb-8">
-                <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#A07CFE] via-[#FE8FB5] to-[#FFBE7B] bg-clip-text text-transparent mb-2">
-                  Welcome
+                <CardTitle className="text-2xl md:text-3xl font-bold text-emerald-900 dark:text-emerald-400 mb-2">
+                  Welcome Back
                 </CardTitle>
-                <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                <CardDescription className="text-sm text-gray-700 dark:text-gray-300">
                   Don't have any account?{" "}
                   <Link
                     href="/signup"
-                    className="text-[#A07CFE] hover:text-[#8b6ce0] font-medium hover:underline transition-colors"
+                    className="text-emerald-800 dark:text-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-200 font-medium hover:underline transition-colors"
                   >
                     Sign up instead
                   </Link>
@@ -321,8 +321,8 @@ export function LoginPage () {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
-                    <Mail className="w-4 h-4" />
+                  <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-300">
+                    <Mail className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     Email
                   </Label>
                   <Input
@@ -331,7 +331,7 @@ export function LoginPage () {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full h-10 text-sm ${errors.email ? "border-red-500" : ""}`}
+                    className={`w-full h-10 text-sm ${errors.email ? "border-red-500" : ""} text-gray-800 dark:text-gray-300`}
                     placeholder="Enter your email"
                   />
                   {errors.email && (
@@ -341,7 +341,7 @@ export function LoginPage () {
 
                 {/* OTP Field */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Label className="text-sm font-medium text-gray-800 dark:text-gray-300">
                     Enter 6-digit OTP
                   </Label>
                   <div className="space-y-3">
@@ -357,7 +357,7 @@ export function LoginPage () {
                           onPaste={handleOtpPaste}
                           disabled={!otpSent}
                           className={`w-12 h-12 text-center text-lg font-semibold p-0 ${errors.otp ? "border-red-500" : ""
-                            } ${!otpSent ? "bg-gray-100 dark:bg-neutral-900 text-gray-400 cursor-not-allowed" : ""}`}
+                            } ${!otpSent ? "bg-gray-100 dark:bg-gray-900 text-gray-400 cursor-not-allowed" : "text-gray-800 dark:text-gray-300"}`}
                           maxLength={1}
                           inputMode="numeric"
                           autoComplete="one-time-code"
@@ -368,7 +368,7 @@ export function LoginPage () {
                       type="button"
                       onClick={handleSendOtp}
                       disabled={sendingOtp}
-                      className="w-full bg-gradient-to-r from-[#8b5cf6] to-[#f26ca7] hover:from-[#7c51e0] hover:to-[#e55b95] transition-all h-10 text-sm text-white"
+                      className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 dark:from-emerald-500 dark:via-emerald-400 dark:to-emerald-300 hover:from-emerald-800 hover:via-emerald-700 hover:to-emerald-600 dark:hover:from-emerald-600 dark:hover:via-emerald-500 dark:hover:to-emerald-400 transition-all h-10 text-sm text-white dark:text-gray-900 font-medium"
                     >
                       {sendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
                     </Button>
@@ -380,8 +380,8 @@ export function LoginPage () {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium">
-                    <Lock className="w-4 h-4" />
+                  <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-300">
+                    <Lock className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     Password
                   </Label>
                   <div className="relative">
@@ -391,13 +391,13 @@ export function LoginPage () {
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={handleChange}
-                      className={`w-full h-10 text-sm pr-10 ${errors.password ? "border-red-500" : ""}`}
+                      className={`w-full h-10 text-sm pr-10 ${errors.password ? "border-red-500" : ""} text-gray-800 dark:text-gray-300`}
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -411,7 +411,7 @@ export function LoginPage () {
                 <Button
                   type="submit"
                   onClick={handleSubmit}
-                  className="w-full bg-gradient-to-r from-[#8b5cf6] via-[#f26ca7] to-[#ff9e6d] hover:from-[#7c51e0] hover:via-[#e55b95] hover:to-[#f08d5a] transition-all duration-300 text-white font-semibold text-sm h-11 shadow-md"
+                  className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 dark:from-emerald-500 dark:via-emerald-400 dark:to-emerald-300 hover:from-emerald-800 hover:via-emerald-700 hover:to-emerald-600 dark:hover:from-emerald-600 dark:hover:via-emerald-500 dark:hover:to-emerald-400 transition-all duration-300 text-white dark:text-gray-900 font-semibold text-sm h-11 shadow-md"
                 >
                   LOGIN
                 </Button>
@@ -422,17 +422,17 @@ export function LoginPage () {
                     <span className="w-full border-t border-gray-300 dark:border-gray-700" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-gray-50 dark:bg-neutral-950 px-3 text-gray-500 dark:text-gray-400">
+                    <span className="bg-white dark:bg-black px-3 text-gray-500 dark:text-gray-400">
                       OR
                     </span>
                   </div>
                 </div>
 
-                {/* Google Sign Up */}
+                {/* Google Login */}
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors h-10 text-sm flex items-center justify-center"
+                  className="w-full border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors h-10 text-sm flex items-center justify-center text-gray-800 dark:text-gray-300"
                   onClick={handleGoogleSignup}
                 >
                   <Image
