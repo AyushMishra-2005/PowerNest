@@ -1,9 +1,8 @@
 "use client"
+import {BlocksPage} from "@/components/BlocksPage"
 
 export default function page() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p>hello</p>
-    </div>
+    <BlocksPage/>
   )
 }

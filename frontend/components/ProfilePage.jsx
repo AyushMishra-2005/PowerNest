@@ -73,7 +73,7 @@ export function ProfilePage() {
     })
 
   return (
-    <div className="bg-white dark:bg-black overflow-hidden mt-12 md:mt-0 lg:mt-0">
+    <div className="min-h-[100vh] bg-white dark:bg-black overflow-hidden mt-12 md:mt-0 lg:mt-0">
       <div className="h-full overflow-y-auto px-4 md:px-8 py-6">
         <div className="max-w-6xl mx-auto space-y-10">
           {/* Header */}

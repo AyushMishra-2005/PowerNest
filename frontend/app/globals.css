@@ -153,3 +153,51 @@
 ::view-transition-old(root), ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;}
+
+
+
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc; 
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; 
+  border-radius: 4px;
+  border: 1px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; 
+}
+
+
+.dark * {
+  scrollbar-color: #475569 #0f172a;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a; 
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569; 
+  border: 1px solid #0f172a;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b; 
+}
+
+
