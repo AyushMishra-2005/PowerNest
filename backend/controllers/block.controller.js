@@ -40,7 +40,18 @@ export const addNewBlock = async (req, res) => {
 }
 
 
+export const allBlockData = async (req, res) => {
+  try{
+    const userId = req.user._id;
 
+    const blocksData = await Block.find({userId});
+    return res.status(200).json({message: "Success", blocksData});
+
+  }catch(err){
+    console.log("Error in allBlockData: ", err);
+    return res.status(501).json({message: "block creation failed"});
+  }
+}
 
 
 

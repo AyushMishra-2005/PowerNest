@@ -27,6 +27,10 @@ const blockSchema = new Schema(
     roomEspId:{
       type: String,
       required: true,
+    },
+    rooms:{
+      type: Number,
+      default: 0
     }
   },
   {
