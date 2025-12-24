@@ -10,8 +10,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building, Plus, ChevronDown } from "lucide-react";
+import server from '../envirnoment.js'
+import axios from "axios";
+import { toast } from 'react-hot-toast'
 
 export function AnimatedModal() {
   const [formData, setFormData] = useState({
@@ -38,7 +40,6 @@ export function AnimatedModal() {
     "Healthcare"
   ];
 
-  // Handle click outside to close select dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectRef.current && !selectRef.current.contains(event.target)) {
@@ -54,30 +55,44 @@ export function AnimatedModal() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) newErrors.name = "Block name is required";
     if (!formData.sensor.trim()) newErrors.sensor = "Sensor ESP ID is required";
     if (!formData.room.trim()) newErrors.room = "Room ESP ID is required";
     if (!formData.description.trim()) newErrors.description = "Description is required";
-    
+
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationErrors = validateForm();
-    
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log("New block data:", formData);
+
+    const formattedData = {
+      blockName: formData.name,
+      blockType: formData.type,
+      blockDescription: formData.description,
+      sensorEspId: formData.sensor,
+      roomEspId: formData.room,
+    }
+
+    try {
+      const { data } = await axios.post(
+        `${server}/block/add-block`,
+        formattedData,
+        { withCredentials: true }
+      );
+
+      console.log(data.newBlock);
+      toast.success("Block registered");
       setFormData({
         name: "",
         type: "Academic",
@@ -85,10 +100,15 @@ export function AnimatedModal() {
         room: "",
         description: ""
       });
-      setErrors({});
-      setIsSubmitting(false);
-      setIsSelectOpen(false);
-    }, 500);
+
+    } catch (err) {
+      console.log("Error during form submission:", err);
+      toast.error("Error occurred.");
+    }
+
+    setErrors({});
+    setIsSubmitting(false);
+    setIsSelectOpen(false);
   };
 
   const handleChange = (e) => {
@@ -97,8 +117,7 @@ export function AnimatedModal() {
       ...prev,
       [name]: value
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -135,12 +154,10 @@ export function AnimatedModal() {
           </div>
         </ModalTrigger>
         <ModalBody className="overflow-hidden">
-          {/* Whole modal content wrapper with scroll */}
           <div className="max-h-[80vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
               <ModalContent>
                 <div className="space-y-6 p-4">
-                  {/* Header */}
                   <div className="text-center mb-6">
                     <div className="h-12 w-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
                       <Building className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
@@ -153,9 +170,7 @@ export function AnimatedModal() {
                     </p>
                   </div>
 
-                  {/* Form */}
                   <div className="space-y-5">
-                    {/* Block Name */}
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-emerald-800 dark:text-emerald-300">
                         Block Name *
@@ -166,9 +181,8 @@ export function AnimatedModal() {
                         value={formData.name}
                         onChange={handleChange}
                         placeholder="Enter block name (e.g., Central Block)"
-                        className={`border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 ${
-                          errors.name ? "border-red-500 dark:border-red-500" : ""
-                        }`}
+                        className={`border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 ${errors.name ? "border-red-500 dark:border-red-500" : ""
+                          }`}
                         required
                       />
                       {errors.name && (
@@ -176,7 +190,6 @@ export function AnimatedModal() {
                       )}
                     </div>
 
-                    {/* Block Type - Custom implementation */}
                     <div className="space-y-2" ref={selectRef}>
                       <Label className="text-emerald-800 dark:text-emerald-300">
                         Block Type *
@@ -185,25 +198,23 @@ export function AnimatedModal() {
                         <button
                           type="button"
                           onClick={toggleSelect}
-                          className={`w-full flex items-center justify-between p-2 border rounded-md bg-white dark:bg-gray-900 text-left ${
-                            errors.type ? "border-red-500 dark:border-red-500" : "border-emerald-300 dark:border-emerald-700"
-                          } focus:ring-emerald-500 focus:border-emerald-500`}
+                          className={`w-full flex items-center justify-between p-2 border rounded-md bg-white dark:bg-gray-900 text-left ${errors.type ? "border-red-500 dark:border-red-500" : "border-emerald-300 dark:border-emerald-700"
+                            } focus:ring-emerald-500 focus:border-emerald-500`}
                         >
                           <span className="text-emerald-800 dark:text-emerald-300">
                             {formData.type || "Select block type"}
                           </span>
                           <ChevronDown className={`h-4 w-4 text-emerald-600 dark:text-emerald-400 transition-transform ${isSelectOpen ? "rotate-180" : ""}`} />
                         </button>
-                        
+
                         {isSelectOpen && (
                           <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900 border border-emerald-200 dark:border-emerald-800 rounded-md shadow-lg">
                             {blockTypes.map((type) => (
                               <div
                                 key={type}
                                 onClick={() => handleSelectChange(type)}
-                                className={`px-3 py-2 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer ${
-                                  formData.type === type ? "bg-emerald-50 dark:bg-emerald-900/30" : ""
-                                } first:rounded-t-md last:rounded-b-md`}
+                                className={`px-3 py-2 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer ${formData.type === type ? "bg-emerald-50 dark:bg-emerald-900/30" : ""
+                                  } first:rounded-t-md last:rounded-b-md`}
                               >
                                 {type}
                               </div>
@@ -216,7 +227,6 @@ export function AnimatedModal() {
                       )}
                     </div>
 
-                    {/* Rooms & Devices */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="sensor" className="text-emerald-800 dark:text-emerald-300">
@@ -230,9 +240,8 @@ export function AnimatedModal() {
                             value={formData.sensor}
                             onChange={handleChange}
                             placeholder="ESP_RELAY_ROOM_101"
-                            className={`border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 ${
-                              errors.sensor ? "border-red-500 dark:border-red-500" : ""
-                            }`}
+                            className={`border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 ${errors.sensor ? "border-red-500 dark:border-red-500" : ""
+                              }`}
                             required
                           />
                         </div>
@@ -253,9 +262,8 @@ export function AnimatedModal() {
                             value={formData.room}
                             onChange={handleChange}
                             placeholder="ESP_PIR_ROOM_101"
-                            className={`border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 ${
-                              errors.room ? "border-red-500 dark:border-red-500" : ""
-                            }`}
+                            className={`border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 ${errors.room ? "border-red-500 dark:border-red-500" : ""
+                              }`}
                             required
                           />
                         </div>
@@ -265,7 +273,6 @@ export function AnimatedModal() {
                       </div>
                     </div>
 
-                    {/* Description */}
                     <div className="space-y-2">
                       <Label htmlFor="description" className="text-emerald-800 dark:text-emerald-300">
                         Description *
@@ -276,9 +283,8 @@ export function AnimatedModal() {
                         value={formData.description}
                         onChange={handleChange}
                         placeholder="Describe the block's purpose and features..."
-                        className={`min-h-[100px] border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 resize-y ${
-                          errors.description ? "border-red-500 dark:border-red-500" : ""
-                        }`}
+                        className={`min-h-[100px] border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 focus:ring-emerald-500 focus:border-emerald-500 resize-y ${errors.description ? "border-red-500 dark:border-red-500" : ""
+                          }`}
                         required
                       />
                       {errors.description ? (

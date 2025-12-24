@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Building, Plus, ChevronRight, Eye, ChevronDown, ChevronUp } from "lucide-react"
 import {AnimatedModal} from '@/components/AnimatedModal'
+import { useRouter } from "next/navigation"
 
 export function BlocksPage() {
   const [showAllBlocks, setShowAllBlocks] = useState(false)
   const contentRef = useRef(null)
+  const router = useRouter();
   
   // All blocks in one array
   const allBlocks = [
@@ -71,6 +73,7 @@ export function BlocksPage() {
 
   const handleViewDetails = (blockId) => {
     console.log(`Viewing details for block ${blockId}`)
+    router.push("/espConnetion");
   }
 
   const handleExploreMore = () => {

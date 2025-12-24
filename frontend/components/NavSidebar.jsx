@@ -20,7 +20,6 @@ import {
 export default function NavSidebar() {
   const [open, setOpen] = useState(false)
   const { authUser } = useAuth();
-  console.log(authUser.user);
 
   const links = [
     {
