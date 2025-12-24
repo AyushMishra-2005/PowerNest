@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import userRoute from './routes/user.route.js'
 import { v2 as cloudinary } from 'cloudinary';
+import blockRoute from './routes/block.route.js'
 
 const app = express();
 app.use(express.json());
@@ -39,6 +40,7 @@ const main = async () => {
 main();
 
 app.use("/user", userRoute);
+app.use("/block", blockRoute);
 
 app.get("/getImage", (req, res) => {
   const timestamp = Math.round(new Date().getTime() / 1000);
