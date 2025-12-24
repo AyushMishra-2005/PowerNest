@@ -6,7 +6,7 @@ const blockSchema = new Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      reqired: true,
+      required: true,
     },
     blockName: {
       type: String,
