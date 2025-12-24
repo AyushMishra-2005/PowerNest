@@ -14,6 +14,7 @@ import { Building, Plus, ChevronDown } from "lucide-react";
 import server from '../envirnoment.js'
 import axios from "axios";
 import { toast } from 'react-hot-toast'
+import useBlockStore from "@/store/blockStore"
 
 export function AnimatedModal() {
   const [formData, setFormData] = useState({
@@ -23,6 +24,7 @@ export function AnimatedModal() {
     room: "",
     description: ""
   });
+  const { addBlock } = useBlockStore();
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,7 +93,8 @@ export function AnimatedModal() {
         { withCredentials: true }
       );
 
-      console.log(data.newBlock);
+      addBlock(data.data);
+
       toast.success("Block registered");
       setFormData({
         name: "",
