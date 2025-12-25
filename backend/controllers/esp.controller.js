@@ -36,13 +36,13 @@ export const addPin = async (req, res) => {
       });
     }
 
-    let espData = await EspData.findOne({ blockId });
+    const espData = await EspData.findOne({ blockId });
 
     if (!espData) {
-      espData = await EspData.create({ blockId });
+      return res.status(404).json({
+        message: "esp data doesn't exist",
+      });
     }
-
-    console.log(espData);
 
     const sensorPinAvailable = espData.availableSensorEspPins.includes(sensorEspPin);
     const roomPinAvailable = espData.availableRoomEspPins.includes(roomEspPin);
@@ -76,7 +76,42 @@ export const addPin = async (req, res) => {
 }
 
 
+export const getData = async (req, res) => {
+  const {blockId} = req.body;
+  try{
 
+    const userId = req.user._id;
+
+    const blockData = await Block.findById(blockId);
+    if (!blockData) {
+      return res.status(404).json({
+        message: "block doesn't exist",
+      });
+    }
+
+    if (!blockData.userId.equals(userId)) {
+      return res.status(403).json({
+        message: "You cannot modify this block",
+      });
+    }
+
+    const espData = await EspData.findOne({blockId});
+    if (!espData) {
+      return res.status(404).json({
+        message: "esp data doesn't exist",
+      });
+    }
+
+    return res.status(200).json({
+      message: "success",
+      data: espData
+    });
+    
+  }catch(err){
+    console.log("Error in addpin", err);
+    return res.status(501).json({ message: "Error occurred" });
+  }
+}
 
 
 

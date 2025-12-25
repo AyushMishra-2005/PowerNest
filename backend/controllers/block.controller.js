@@ -1,4 +1,5 @@
 import Block from "../models/block.model.js"
+import EspData from '../models/espData.model.js'
 
 export const addNewBlock = async (req, res) => {
   const { blockName, blockType, blockDescription, sensorEspId, roomEspId } = req.body;
@@ -27,6 +28,10 @@ export const addNewBlock = async (req, res) => {
       sensorEspId: sensorEspId.trim(),
       roomEspId: roomEspId.trim(),
     });
+
+    const espData = await EspData.create({ blockId: newBlock._id });
+    espData.save();
+
 
     return res.status(201).json({
       message: "Block created successfully",
