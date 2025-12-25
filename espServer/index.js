@@ -1,6 +1,7 @@
 import express from "express";
 import mqtt from "mqtt";
 import cors from "cors";
+import { getRoomEspId } from "./services/roomMapping.service.js";
 
 const app = express();
 app.use(cors());
@@ -8,34 +9,30 @@ app.use(express.json());
 
 const PORT = 9000;
 
-// FIXED ESP IDS
-const PIR_ESP_ID = "ESP_PIR_ROOM_101";
-const RELAY_ESP_ID = "ESP_RELAY_ROOM_101";
-
 const mqttClient = mqtt.connect("mqtt://broker.hivemq.com:1883");
 
 mqttClient.on("connect", () => {
   console.log("MQTT connected");
-
-  const topic = `powernest/${PIR_ESP_ID}/pir/+`;
-  mqttClient.subscribe(topic);
-
-  console.log("Subscribed to:", topic);
+  mqttClient.subscribe("powernest/+/pir/+");
 });
 
-mqttClient.on("message", (topic, message) => {
+mqttClient.on("message", async (topic, message) => {
   const payload = message.toString();
-  const parts = topic.split("/");
+  const [, sensorEspId, type, pin] = topic.split("/");
 
-  const espId = parts[1];
-  const pin = parts[3];
+  if (type !== "pir") return;
 
-  if (espId !== PIR_ESP_ID) return;
+  console.log(
+    `Motion from ${sensorEspId} | PIN ${pin} | STATE ${payload}`
+  );
 
-  console.log(`Motion | PIN ${pin} | ${payload}`);
+  const roomEspId = await getRoomEspId(sensorEspId);
 
-  const relayTopic = `powernest/${RELAY_ESP_ID}/relay/${pin}`;
+  if (!roomEspId) return;
+
+  const relayTopic = `powernest/${roomEspId}/relay/${pin}`;
   mqttClient.publish(relayTopic, payload);
+
 });
 
 app.listen(PORT, () => {
