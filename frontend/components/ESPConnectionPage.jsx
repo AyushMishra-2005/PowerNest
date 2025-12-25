@@ -1,63 +1,134 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Activity, Wifi, Cpu, Link2, ChevronLeft, Save, Zap, Settings } from "lucide-react"
+import { Activity, Cpu, Link2, Save, Zap, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
+import useBlockStore from "@/store/blockStore"
+import { useMemo } from "react"
+import server from '../envirnoment.js'
+import axios from "axios"
+import { toast } from 'react-hot-toast'
 
-export function ESPConnectionPage({roomId}) {
+export function ESPConnectionPage({ blockId }) {
   const router = useRouter();
-  
+  const { blocks } = useBlockStore();
+
+  const roomData = useMemo(() => {
+    return blocks.find(b => b._id.toString() === blockId);
+  }, [blocks, blockId]);
+
+  useEffect(() => {
+    if (!blocks?.length || !roomData) {
+      return router.replace("/dashboard");
+    }
+  }, [blocks, roomData, router]);
+
   const [sensorESPStatus, setSensorESPStatus] = useState("active")
   const [roomESPStatus, setRoomESPStatus] = useState("inactive")
   const [selectedSensorPin, setSelectedSensorPin] = useState("")
   const [selectedRoomPin, setSelectedRoomPin] = useState("")
-  const [connections, setConnections] = useState([
-    { id: 1, sensorPin: "D1", roomPin: "D1", status: "connected" },
-    { id: 2, sensorPin: "D2", roomPin: "D2", status: "connected" }
-  ])
+  const [connections, setConnections] = useState([])
+  const [availableSensorEspPins, setAvailableSensorEspPins] = useState([]);
+  const [availableRoomEspPins, setAvailableRoomEspPins] = useState([]);
 
-  const availablePins = [
-    "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"
-  ]
+  useEffect(() => {
+    const getEspData = async () => {
+      const { data } = await axios.post(
+        `${server}/esp/get-esp-data`,
+        { blockId },
+        { withCredentials: true }
+      );
 
-  const handleMakeConnection = () => {
-    if (selectedSensorPin && selectedRoomPin) {
-      const exists = connections.some(
-        conn => conn.sensorPin === selectedSensorPin && conn.roomPin === selectedRoomPin
-      )
-      
-      if (!exists) {
-        const newConnection = {
-          id: connections.length + 1,
-          sensorPin: selectedSensorPin,
-          roomPin: selectedRoomPin,
-          status: "pending"
-        }
-        
-        setConnections([...connections, newConnection])
-        
-        setTimeout(() => {
-          setConnections(prev => 
-            prev.map(conn => 
-              conn.id === newConnection.id 
-                ? { ...conn, status: "connected" }
-                : conn
-            )
-          )
-        }, 1500)
-        
-        setSelectedSensorPin("")
-        setSelectedRoomPin("")
+      if (data.data) {
+        setAvailableSensorEspPins(data.data.availableSensorEspPins);
+        setAvailableRoomEspPins(data.data.availableRoomEspPins);
+        setConnections(
+          data.data.connectedPins.map(pin => ({
+            id: pin._id,
+            sensorPin: `D${pin.sensorEspPin}`,
+            roomPin: `D${pin.roomEspPin}`,
+            status: "connected",
+          }))
+        );
       }
+    }
+    getEspData();
+  }, [setAvailableSensorEspPins, setAvailableRoomEspPins]);
+
+  const handleMakeConnection = async () => {
+    if (selectedSensorPin && selectedRoomPin) {
+      const pinDetails = {
+        sensorEspPin: Number(selectedSensorPin),
+        roomEspPin: Number(selectedRoomPin),
+        blockId,
+      };
+
+      try {
+        const { data } = await axios.post(
+          `${server}/esp/add-pin`,
+          pinDetails,
+          { withCredentials: true }
+        );
+        toast.success("pins connected");
+        if (data.data) {
+          setAvailableSensorEspPins(data.data.availableSensorEspPins);
+          setAvailableRoomEspPins(data.data.availableRoomEspPins);
+          setConnections(
+            data.data.connectedPins.map(pin => ({
+              id: pin._id,
+              sensorPin: `D${pin.sensorEspPin}`,
+              roomPin: `D${pin.roomEspPin}`,
+              status: "connected",
+            }))
+          );
+        }
+      } catch (err) {
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Something went wrong";
+
+        toast.error(message);
+      }
+
+      setSelectedSensorPin("")
+      setSelectedRoomPin("")
     }
   }
 
-  const handleRemoveConnection = (id) => {
-    setConnections(connections.filter(conn => conn.id !== id))
+  const handleRemoveConnection = async (id) => {
+    try {
+
+      const { data } = await axios.post(
+        `${server}/esp/remove-connection`,
+        { blockId, connectionId: id },
+        { withCredentials: true }
+      );
+
+      toast.success("connection removed");
+      if (data.data) {
+        setAvailableSensorEspPins(data.data.availableSensorEspPins);
+        setAvailableRoomEspPins(data.data.availableRoomEspPins);
+        setConnections(
+          data.data.connectedPins.map(pin => ({
+            id: pin._id,
+            sensorPin: `D${pin.sensorEspPin}`,
+            roomPin: `D${pin.roomEspPin}`,
+            status: "connected",
+          }))
+        );
+      }
+
+
+    } catch (err) {
+      const message = err?.response?.data?.message ||
+        err?.message || "Something went wrong";
+      toast.error(message);
+    }
   }
 
   const handleSaveConfiguration = () => {
@@ -66,7 +137,7 @@ export function ESPConnectionPage({roomId}) {
       roomESPStatus,
       connections
     })
-    
+
     setTimeout(() => {
       alert("Configuration saved successfully!")
     }, 500)
@@ -74,7 +145,7 @@ export function ESPConnectionPage({roomId}) {
 
   const handleTestConnection = (type) => {
     console.log(`Testing ${type} ESP connection...`)
-    
+
     if (type === "sensor") {
       setSensorESPStatus("testing")
       setTimeout(() => setSensorESPStatus("active"), 1000)
@@ -99,7 +170,7 @@ export function ESPConnectionPage({roomId}) {
               </p>
             </div>
           </div>
-          
+
           <Button
             onClick={handleSaveConfiguration}
             className="bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 text-white dark:text-gray-900 font-medium h-12 rounded-lg flex justify-center group/modal-btn hover:from-emerald-700 hover:to-emerald-600 dark:hover:from-emerald-600 dark:hover:to-emerald-500 shadow-lg transition-all duration-300 cursor-pointer"
@@ -125,18 +196,18 @@ export function ESPConnectionPage({roomId}) {
                       Sensor ESP Status
                     </CardTitle>
                     <Badge className={
-                      sensorESPStatus === "active" 
+                      sensorESPStatus === "active"
                         ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
                         : sensorESPStatus === "testing"
-                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                     }>
-                      {sensorESPStatus === "active" ? "Active" : 
-                       sensorESPStatus === "testing" ? "Testing..." : "Inactive"}
+                      {sensorESPStatus === "active" ? "Active" :
+                        sensorESPStatus === "testing" ? "Testing..." : "Inactive"}
                     </Badge>
                   </div>
                   <CardDescription className="text-emerald-800 dark:text-emerald-300">
-                    ESP_RELAY_SENSOR_101
+                    <b>ESP_ID:</b> {roomData?.sensorEspId}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -161,18 +232,18 @@ export function ESPConnectionPage({roomId}) {
                       Room ESP Status
                     </CardTitle>
                     <Badge className={
-                      roomESPStatus === "active" 
+                      roomESPStatus === "active"
                         ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
                         : roomESPStatus === "testing"
-                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                     }>
-                      {roomESPStatus === "active" ? "Active" : 
-                       roomESPStatus === "testing" ? "Testing..." : "Inactive"}
+                      {roomESPStatus === "active" ? "Active" :
+                        roomESPStatus === "testing" ? "Testing..." : "Inactive"}
                     </Badge>
                   </div>
                   <CardDescription className="text-emerald-800 dark:text-emerald-300">
-                    ESP_PIR_ROOM_101
+                    <b>ESP_ID:</b> {roomData?.roomEspId}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -214,7 +285,7 @@ export function ESPConnectionPage({roomId}) {
                           Output
                         </Badge>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm text-gray-600 dark:text-gray-400">
                           Select Pin for Connection
@@ -224,15 +295,15 @@ export function ESPConnectionPage({roomId}) {
                             <SelectValue placeholder="Select sensor pin" />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-gray-900 border-emerald-200 dark:border-emerald-800">
-                            {availablePins.map(pin => (
+                            {availableSensorEspPins.map(pin => (
                               <SelectItem key={`sensor-${pin}`} value={pin} className="text-emerald-800 dark:text-emerald-300">
-                                Pin {pin} (GPIO)
+                                Pin D{pin} (GPIO)
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div className="text-sm text-gray-500 dark:text-gray-500">
                         <p>Available pins for PIR sensor</p>
                       </div>
@@ -248,7 +319,7 @@ export function ESPConnectionPage({roomId}) {
                           Input
                         </Badge>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-sm text-gray-600 dark:text-gray-400">
                           Select Pin for Connection
@@ -258,15 +329,15 @@ export function ESPConnectionPage({roomId}) {
                             <SelectValue placeholder="Select room pin" />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-gray-900 border-emerald-200 dark:border-emerald-800">
-                            {availablePins.map(pin => (
+                            {availableRoomEspPins.map(pin => (
                               <SelectItem key={`room-${pin}`} value={pin} className="text-emerald-800 dark:text-emerald-300">
-                                Pin {pin} (GPIO)
+                                Pin D{pin} (GPIO)
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div className="text-sm text-gray-500 dark:text-gray-500">
                         <p>Available pins for relay control</p>
                       </div>
@@ -307,18 +378,17 @@ export function ESPConnectionPage({roomId}) {
                   ) : (
                     <div className="space-y-4">
                       {connections.map(connection => (
-                        <div 
+                        <div
                           key={connection.id}
                           className="flex items-center justify-between p-4 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`h-3 w-3 rounded-full ${
-                              connection.status === "connected" 
-                                ? "bg-emerald-500 animate-pulse" 
-                                : connection.status === "pending"
+                            <div className={`h-3 w-3 rounded-full ${connection.status === "connected"
+                              ? "bg-emerald-500 animate-pulse"
+                              : connection.status === "pending"
                                 ? "bg-blue-500 animate-pulse"
                                 : "bg-gray-400"
-                            }`} />
+                              }`} />
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-emerald-900 dark:text-emerald-400">
@@ -330,11 +400,10 @@ export function ESPConnectionPage({roomId}) {
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <span className={`px-2 py-1 rounded text-xs ${
-                                  connection.status === "connected" 
-                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                                }`}>
+                                <span className={`px-2 py-1 rounded text-xs ${connection.status === "connected"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                  : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                  }`}>
                                   {connection.status === "connected" ? "Active" : "Connecting..."}
                                 </span>
                                 <span>•</span>
@@ -342,7 +411,7 @@ export function ESPConnectionPage({roomId}) {
                               </div>
                             </div>
                           </div>
-                          
+
                           <Button
                             variant="ghost"
                             size="sm"
@@ -355,7 +424,7 @@ export function ESPConnectionPage({roomId}) {
                       ))}
                     </div>
                   )}
-                  
+
                   <div className="mt-6 pt-4 border-t border-emerald-200 dark:border-emerald-800">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">Connection Status:</span>

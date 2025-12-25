@@ -6,6 +6,6 @@ import { useParams } from "next/navigation";
 export default function page() {
   const { id } = useParams();
   return (
-    <ESPConnectionPage roomId={id}/>
+    <ESPConnectionPage blockId={id}/>
   );
 }
