@@ -8,6 +8,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import blockRoute from './routes/block.route.js'
 import espRoute from './routes/esp.route.js'
 import {app, io, server} from './SocketIO/server.js'
+import espServerRoute from './routes/espServer.route.js'
 
 dotenv.config();
 app.use(express.json());
@@ -44,6 +45,7 @@ main();
 app.use("/user", userRoute);
 app.use("/block", blockRoute);
 app.use("/esp", espRoute);
+app.use("/main-server", espServerRoute);
 
 app.get("/getImage", (req, res) => {
   const timestamp = Math.round(new Date().getTime() / 1000);

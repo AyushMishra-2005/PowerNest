@@ -23,10 +23,12 @@ const blockSchema = new Schema(
     sensorEspId:{
       type: String,
       required: true,
+      unique: true
     },
     roomEspId:{
       type: String,
       required: true,
+      unique: true
     },
     rooms:{
       type: Number,
