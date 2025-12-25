@@ -24,6 +24,10 @@ const espDataSchema = new Schema(
     connectedPins:{
       type:[
         {
+          roomNumber:{
+            type: String,
+            required: true,
+          },
           sensorEspPin:{
             type: Number,
             required: true,

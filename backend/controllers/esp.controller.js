@@ -2,11 +2,13 @@ import EspData from '../models/espData.model.js'
 import Block from '../models/block.model.js';
 
 export const addPin = async (req, res) => {
-  let { sensorEspPin, roomEspPin, blockId } = req.body;
+  let { sensorEspPin, roomEspPin, blockId, roomNumber } = req.body;
 
   if (
     sensorEspPin === undefined ||
     roomEspPin === undefined ||
+    !roomNumber ||
+    roomNumber.trim() === "" ||
     !blockId
   ) {
     return res.status(400).json({
@@ -54,6 +56,7 @@ export const addPin = async (req, res) => {
     }
 
     espData.connectedPins.push({
+      roomNumber,
       sensorEspPin,
       roomEspPin
     });
