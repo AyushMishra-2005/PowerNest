@@ -8,10 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Activity, Wifi, Cpu, Link2, ChevronLeft, Save, Zap, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-export function ESPConnectionPage() {
-  const router = useRouter()
+export function ESPConnectionPage({roomId}) {
+  const router = useRouter();
   
-  // Initial state
   const [sensorESPStatus, setSensorESPStatus] = useState("active")
   const [roomESPStatus, setRoomESPStatus] = useState("inactive")
   const [selectedSensorPin, setSelectedSensorPin] = useState("")
@@ -27,7 +26,6 @@ export function ESPConnectionPage() {
 
   const handleMakeConnection = () => {
     if (selectedSensorPin && selectedRoomPin) {
-      // Check if connection already exists
       const exists = connections.some(
         conn => conn.sensorPin === selectedSensorPin && conn.roomPin === selectedRoomPin
       )
@@ -42,7 +40,6 @@ export function ESPConnectionPage() {
         
         setConnections([...connections, newConnection])
         
-        // Simulate connection process
         setTimeout(() => {
           setConnections(prev => 
             prev.map(conn => 
@@ -53,7 +50,6 @@ export function ESPConnectionPage() {
           )
         }, 1500)
         
-        // Reset selections
         setSelectedSensorPin("")
         setSelectedRoomPin("")
       }
@@ -71,7 +67,6 @@ export function ESPConnectionPage() {
       connections
     })
     
-    // Simulate save process
     setTimeout(() => {
       alert("Configuration saved successfully!")
     }, 500)

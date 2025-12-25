@@ -41,8 +41,7 @@ export function BlocksPage() {
   const showExploreMore = blocks.length > 3
 
   const handleViewDetails = (blockId) => {
-    console.log(`Viewing details for block ${blockId}`)
-    router.push("/espConnetion");
+    router.push(`/espConnetion/${blockId}`);
   }
 
   const handleExploreMore = () => {
