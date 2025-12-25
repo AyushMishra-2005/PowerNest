@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import userRoute from './routes/user.route.js'
 import { v2 as cloudinary } from 'cloudinary';
 import blockRoute from './routes/block.route.js'
+import espRoute from './routes/esp.route.js'
 
 const app = express();
 app.use(express.json());
@@ -41,6 +42,7 @@ main();
 
 app.use("/user", userRoute);
 app.use("/block", blockRoute);
+app.use("/esp", espRoute);
 
 app.get("/getImage", (req, res) => {
   const timestamp = Math.round(new Date().getTime() / 1000);

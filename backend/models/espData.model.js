@@ -6,11 +6,20 @@ const espDataSchema = new Schema(
     blockId:{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Block",
-      required: true
+      required: true,
+      unique: true
     },
     allEspPins:{
       type: [Number],
       default:[4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33]
+    },
+    availableSensorEspPins:{
+      type:[Number],
+      default:[4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33],
+    },
+    availableRoomEspPins:{
+      type:[Number],
+      default:[4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33],
     },
     connectedPins:{
       type:[
