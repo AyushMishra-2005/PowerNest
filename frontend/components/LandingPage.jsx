@@ -84,9 +84,7 @@ export function LandingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black w-full">
-
-      {/* Hero Section */}
+    <div className="min-h-screen bg-white dark:bg-black w-full mt-4 md:mt-0 lg:mt-0">
       <section className="flex items-center min-h-[100vh] sm:mt-0">
         <div className="container mx-auto px-4 text-center max-w-4xl">
           <Badge className="mb-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
@@ -142,7 +140,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
       <section id="features" className="py-20 bg-gray-50 dark:bg-gray-900/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -174,7 +171,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -213,7 +209,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-12 border-t bg-white dark:bg-black">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2">

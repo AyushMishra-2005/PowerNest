@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch" // Add Switch import
 import { Activity, Cpu, Link2, Save, Zap, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
 import useBlockStore from "@/store/blockStore"
@@ -34,6 +35,7 @@ export function ESPConnectionPage({ blockId }) {
   const [connections, setConnections] = useState([])
   const [availableSensorEspPins, setAvailableSensorEspPins] = useState([]);
   const [availableRoomEspPins, setAvailableRoomEspPins] = useState([]);
+  const [roomNumber, setRoomNumber] = useState("");
 
   useEffect(() => {
     const getEspData = async () => {
@@ -42,7 +44,7 @@ export function ESPConnectionPage({ blockId }) {
         { blockId },
         { withCredentials: true }
       );
-
+      console.log(data.data);
       if (data.data) {
         setAvailableSensorEspPins(data.data.availableSensorEspPins);
         setAvailableRoomEspPins(data.data.availableRoomEspPins);
@@ -52,6 +54,8 @@ export function ESPConnectionPage({ blockId }) {
             sensorPin: `D${pin.sensorEspPin}`,
             roomPin: `D${pin.roomEspPin}`,
             status: "connected",
+            roomNumber: pin.roomNumber,
+            isBlocked: false // Add initial blocked state
           }))
         );
       }
@@ -60,10 +64,11 @@ export function ESPConnectionPage({ blockId }) {
   }, [setAvailableSensorEspPins, setAvailableRoomEspPins]);
 
   const handleMakeConnection = async () => {
-    if (selectedSensorPin && selectedRoomPin) {
+    if (selectedSensorPin && selectedRoomPin && roomNumber) {
       const pinDetails = {
         sensorEspPin: Number(selectedSensorPin),
         roomEspPin: Number(selectedRoomPin),
+        roomNumber,
         blockId,
       };
 
@@ -83,6 +88,8 @@ export function ESPConnectionPage({ blockId }) {
               sensorPin: `D${pin.sensorEspPin}`,
               roomPin: `D${pin.roomEspPin}`,
               status: "connected",
+              roomNumber: pin.roomNumber,
+              isBlocked: false
             }))
           );
         }
@@ -97,12 +104,12 @@ export function ESPConnectionPage({ blockId }) {
 
       setSelectedSensorPin("")
       setSelectedRoomPin("")
+      setRoomNumber("");
     }
   }
 
   const handleRemoveConnection = async (id) => {
     try {
-
       const { data } = await axios.post(
         `${server}/esp/remove-connection`,
         { blockId, connectionId: id },
@@ -119,16 +126,25 @@ export function ESPConnectionPage({ blockId }) {
             sensorPin: `D${pin.sensorEspPin}`,
             roomPin: `D${pin.roomEspPin}`,
             status: "connected",
+            roomNumber: pin.roomNumber,
+            isBlocked: false
           }))
         );
       }
-
-
     } catch (err) {
       const message = err?.response?.data?.message ||
         err?.message || "Something went wrong";
       toast.error(message);
     }
+  }
+
+  // Toggle block status for a connection
+  const handleToggleBlock = (id) => {
+    setConnections(prevConnections =>
+      prevConnections.map(conn =>
+        conn.id === id ? { ...conn, isBlocked: !conn.isBlocked } : conn
+      )
+    );
   }
 
   const handleSaveConfiguration = () => {
@@ -157,14 +173,20 @@ export function ESPConnectionPage({ blockId }) {
 
   return (
     <div className="h-[100vh] bg-gradient-to-br bg-white dark:bg-black overflow-hidden flex flex-col">
-      {/* Header */}
       <div className="px-6 md:px-8 py-6 border-b border-emerald-200 dark:border-emerald-800 flex-shrink-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-emerald-900 dark:text-emerald-400 mb-1">
-                ESP Connection Setup
-              </h1>
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-emerald-900 dark:text-emerald-400">
+                  ESP Connection Setup
+                </h1>
+                {roomData?.blockName && (
+                  <span className="text-lg md:text-xl font-semibold text-emerald-700 dark:text-emerald-300">
+                    • {roomData.blockName}
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Configure and manage connections between Sensor ESP and Room ESP
               </p>
@@ -274,7 +296,7 @@ export function ESPConnectionPage({ blockId }) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg">
                     {/* Sensor ESP Pin Selection */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -342,13 +364,42 @@ export function ESPConnectionPage({ blockId }) {
                         <p>Available pins for relay control</p>
                       </div>
                     </div>
+
+                    {/* Room Number Input */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-emerald-900 dark:text-emerald-400">
+                          Room Details
+                        </h3>
+                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                          Info
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-600 dark:text-gray-400">
+                          Room Number
+                        </label>
+                        <input
+                          type="text"
+                          value={roomNumber}
+                          onChange={(e) => setRoomNumber(e.target.value)}
+                          placeholder="Enter room number"
+                          className="w-full px-3 py-1.5 border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-900 rounded-md text-emerald-900 dark:text-emerald-300 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div className="text-sm text-gray-500 dark:text-gray-500">
+                        <p>Enter the room number/name</p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Make Connection Button */}
                   <div className="flex justify-center mt-6">
                     <Button
                       onClick={handleMakeConnection}
-                      disabled={!selectedSensorPin || !selectedRoomPin}
+                      disabled={!selectedSensorPin || !selectedRoomPin || !roomNumber}
                       className="bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-500 dark:to-emerald-400 hover:from-emerald-700 hover:to-emerald-600 dark:hover:from-emerald-600 dark:hover:to-emerald-500 text-white dark:text-gray-900 shadow-lg px-8 py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Link2 className="h-5 w-5 mr-3" />
@@ -380,46 +431,72 @@ export function ESPConnectionPage({ blockId }) {
                       {connections.map(connection => (
                         <div
                           key={connection.id}
-                          className="flex items-center justify-between p-4 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 transition-colors"
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 transition-colors"
                         >
-                          <div className="flex items-center gap-4">
-                            <div className={`h-3 w-3 rounded-full ${connection.status === "connected"
+                          <div className="flex items-start gap-4 mb-3 sm:mb-0">
+                            <div className={`h-3 w-3 rounded-full mt-1.5 ${connection.isBlocked ? "bg-red-500 animate-pulse" : connection.status === "connected"
                               ? "bg-emerald-500 animate-pulse"
-                              : connection.status === "pending"
-                                ? "bg-blue-500 animate-pulse"
-                                : "bg-gray-400"
+                              : "bg-gray-400"
                               }`} />
                             <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-emerald-900 dark:text-emerald-400">
-                                  Sensor ESP Pin: {connection.sensorPin}
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <span className={`font-medium ${connection.isBlocked ? "text-red-700 dark:text-red-400" : "text-emerald-900 dark:text-emerald-400"}`}>
+                                  Sensor Pin: {connection.sensorPin}
                                 </span>
-                                <span className="text-gray-400">→</span>
-                                <span className="font-medium text-emerald-900 dark:text-emerald-400">
-                                  Room ESP Pin: {connection.roomPin}
+                                <span className="text-gray-400 dark:text-gray-500">→</span>
+                                <span className={`font-medium ${connection.isBlocked ? "text-red-700 dark:text-red-400" : "text-emerald-900 dark:text-emerald-400"}`}>
+                                  Room Pin: {connection.roomPin}
                                 </span>
+                                {connection.roomNumber && (
+                                  <>
+                                    <span className="hidden sm:inline text-gray-400 dark:text-gray-500">|</span>
+                                    <span className={`font-medium ${connection.isBlocked ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"}`}>
+                                      Room: {connection.roomNumber}
+                                    </span>
+                                  </>
+                                )}
                               </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <span className={`px-2 py-1 rounded text-xs ${connection.status === "connected"
-                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-                                  : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className={`px-2 py-1 rounded text-xs ${connection.isBlocked
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                  : connection.status === "connected"
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                                   }`}>
-                                  {connection.status === "connected" ? "Active" : "Connecting..."}
+                                  {
+                                    connection.isBlocked
+                                      ? "Blocked"
+                                      : connection.status === "connected"
+                                        ? "Active"
+                                        : "Inactive"
+                                  }
                                 </span>
-                                <span>•</span>
-                                <span>ID: {connection.id}</span>
+                                <span className="text-gray-600 dark:text-gray-400">•</span>
+                                <span className="text-gray-600 dark:text-gray-400">ID: {connection.id}</span>
                               </div>
                             </div>
                           </div>
 
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveConnection(connection.id)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          >
-                            Remove
-                          </Button>
+                          <div className="flex items-center gap-2 self-end sm:self-center">
+                            {/* Toggle Block Switch */}
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={connection.isBlocked}
+                                onCheckedChange={() => handleToggleBlock(connection.id)}
+                                className={`data-[state=checked]:bg-red-500 data-[state=unchecked]:bg-emerald-500`}
+                              />
+                            </div>
+
+                            {/* Remove Button */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveConnection(connection.id)}
+                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              Remove
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -431,11 +508,11 @@ export function ESPConnectionPage({ blockId }) {
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
                           <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                          <span className="text-emerald-900 dark:text-emerald-400">Connected</span>
+                          <span className="text-emerald-900 dark:text-emerald-400">Active</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <div className="h-2 w-2 rounded-full bg-blue-500" />
-                          <span className="text-blue-900 dark:text-blue-400">Pending</span>
+                          <div className="h-2 w-2 rounded-full bg-red-500" />
+                          <span className="text-red-900 dark:text-red-400">Blocked</span>
                         </div>
                       </div>
                     </div>
