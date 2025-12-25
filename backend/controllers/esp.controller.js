@@ -77,8 +77,13 @@ export const addPin = async (req, res) => {
 
 
 export const getData = async (req, res) => {
-  const {blockId} = req.body;
-  try{
+  const { blockId } = req.body;
+  if (!blockId) {
+    return res.status(400).json({
+      message: "all fields are required",
+    });
+  }
+  try {
 
     const userId = req.user._id;
 
@@ -95,7 +100,7 @@ export const getData = async (req, res) => {
       });
     }
 
-    const espData = await EspData.findOne({blockId});
+    const espData = await EspData.findOne({ blockId });
     if (!espData) {
       return res.status(404).json({
         message: "esp data doesn't exist",
@@ -106,15 +111,80 @@ export const getData = async (req, res) => {
       message: "success",
       data: espData
     });
-    
-  }catch(err){
+
+  } catch (err) {
     console.log("Error in addpin", err);
     return res.status(501).json({ message: "Error occurred" });
   }
 }
 
 
+export const removeConnection = async (req, res) => {
+  const { blockId, connectionId } = req.body;
+  if (!blockId || !connectionId) {
+    return res.status(400).json({
+      message: "all fields are required",
+    });
+  }
 
+  try {
+
+    const userId = req.user._id;
+
+    const blockData = await Block.findById(blockId);
+    if (!blockData) {
+      return res.status(404).json({
+        message: "block doesn't exist",
+      });
+    }
+
+    if (!blockData.userId.equals(userId)) {
+      return res.status(403).json({
+        message: "You cannot modify this block",
+      });
+    }
+
+    const espData = await EspData.findOne({ blockId });
+
+    if (!espData) {
+      return res.status(404).json({
+        message: "esp data doesn't exist",
+      });
+    }
+
+    const connection = espData.connectedPins.find(
+      pin => pin._id.toString() === connectionId
+    );
+
+    if (!connection) {
+      return res.status(404).json({
+        message: "connection not found",
+      });
+    }
+
+    espData.connectedPins = espData.connectedPins.filter(
+      pin => pin._id.toString() !== connectionId
+    );
+
+    espData.availableSensorEspPins.push(connection.sensorEspPin);
+    espData.availableRoomEspPins.push(connection.roomEspPin);
+
+    espData.availableSensorEspPins.sort((a, b) => a - b);
+    espData.availableRoomEspPins.sort((a, b) => a - b);
+
+    await espData.save();
+
+    return res.status(200).json({
+      message: "connection removed successfully",
+      data: espData,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({ message: "Error occurred" });
+  }
+
+}
 
 
 
