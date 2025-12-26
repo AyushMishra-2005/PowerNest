@@ -24,6 +24,16 @@ const espDataSchema = new Schema(
     connectedPins:{
       type:[
         {
+          status: {
+            type: String,
+            required: true,
+            default: "inactive",
+          },
+          isBlocked: {
+            type: Boolean,
+            required: true,
+            default: false,
+          },
           roomNumber:{
             type: String,
             required: true,
