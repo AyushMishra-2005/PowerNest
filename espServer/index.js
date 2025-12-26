@@ -17,22 +17,27 @@ mqttClient.on("connect", () => {
 });
 
 mqttClient.on("message", async (topic, message) => {
-  const payload = message.toString();
-  const [, sensorEspId, type, pin] = topic.split("/");
+  try {
+    const payload = message.toString();
+    const [, sensorEspId, type, pin] = topic.split("/");
 
-  if (type !== "pir") return;
+    if (type !== "pir") return;
 
-  console.log(
-    `Motion from ${sensorEspId} | PIN ${pin} | STATE ${payload}`
-  );
+    console.log(
+      `Motion from ${sensorEspId} | PIN ${pin} | STATE ${payload}`
+    );
 
-  const roomEspId = await getRoomEspId(sensorEspId);
+    const mapping = await getRoomEspId({ sensorEspId, pin, payload });
+    if (!mapping) return;
 
-  if (!roomEspId) return;
+    const { roomEspId, roomEspPin } = mapping;
 
-  const relayTopic = `powernest/${roomEspId}/relay/${pin}`;
-  mqttClient.publish(relayTopic, payload);
+    const relayTopic = `powernest/${roomEspId}/relay/${roomEspPin}`;
+    mqttClient.publish(relayTopic, payload);
 
+  } catch (err) {
+    console.error("MQTT handler error:", err.message);
+  }
 });
 
 app.listen(PORT, () => {
