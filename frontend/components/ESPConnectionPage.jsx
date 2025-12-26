@@ -13,10 +13,12 @@ import { useMemo } from "react"
 import server from '../envirnoment.js'
 import axios from "axios"
 import { toast } from 'react-hot-toast'
+import { useSocketContext } from '../context/SocketContext.jsx'
 
 export function ESPConnectionPage({ blockId }) {
   const router = useRouter();
   const { blocks } = useBlockStore();
+  const { socket } = useSocketContext();
 
   const roomData = useMemo(() => {
     return blocks.find(b => b._id.toString() === blockId);
@@ -44,7 +46,6 @@ export function ESPConnectionPage({ blockId }) {
         { blockId },
         { withCredentials: true }
       );
-      console.log(data.data);
       if (data.data) {
         setAvailableSensorEspPins(data.data.availableSensorEspPins);
         setAvailableRoomEspPins(data.data.availableRoomEspPins);
@@ -53,15 +54,54 @@ export function ESPConnectionPage({ blockId }) {
             id: pin._id,
             sensorPin: `D${pin.sensorEspPin}`,
             roomPin: `D${pin.roomEspPin}`,
-            status: "connected",
+            status: pin.status,
             roomNumber: pin.roomNumber,
-            isBlocked: false // Add initial blocked state
+            isBlocked: pin.isBlocked
           }))
         );
       }
     }
     getEspData();
   }, [setAvailableSensorEspPins, setAvailableRoomEspPins]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleActiveEvent = (message) => {
+      const { sensorEspPin } = message;
+
+      setConnections((prev) =>
+        prev.map((conn) =>
+          conn.sensorPin === `D${sensorEspPin}`
+            ? { ...conn, status: "connected" }
+            : conn
+        )
+      );
+    };
+
+    const handleStoppedEvent = (message) => {
+      const { sensorEspPin } = message;
+
+      setConnections((prev) =>
+        prev.map((conn) =>
+          conn.sensorPin === `D${sensorEspPin}`
+            ? { ...conn, status: "inactive" }
+            : conn
+        )
+      );
+    };
+
+
+    socket.on("active", handleActiveEvent);
+
+    socket.on("stopped", handleStoppedEvent);
+
+    return () => {
+      socket.off("active", handleActiveEvent);
+      socket.off("stopped", handleStoppedEvent);
+    }
+
+  }, [socket]);
 
   const handleMakeConnection = async () => {
     if (selectedSensorPin && selectedRoomPin && roomNumber) {
@@ -89,7 +129,7 @@ export function ESPConnectionPage({ blockId }) {
               roomPin: `D${pin.roomEspPin}`,
               status: "connected",
               roomNumber: pin.roomNumber,
-              isBlocked: false
+              isBlocked: pin.isBlocked
             }))
           );
         }
@@ -127,7 +167,7 @@ export function ESPConnectionPage({ blockId }) {
             roomPin: `D${pin.roomEspPin}`,
             status: "connected",
             roomNumber: pin.roomNumber,
-            isBlocked: false
+            isBlocked: pin.isBlocked
           }))
         );
       }
@@ -138,13 +178,34 @@ export function ESPConnectionPage({ blockId }) {
     }
   }
 
-  // Toggle block status for a connection
-  const handleToggleBlock = (id) => {
-    setConnections(prevConnections =>
-      prevConnections.map(conn =>
-        conn.id === id ? { ...conn, isBlocked: !conn.isBlocked } : conn
-      )
-    );
+  const handleToggleBlock = async ({ id, blockStatus }) => {
+    try {
+      const { data } = await axios.post(
+        `${server}/esp/block-connection`,
+        { blockId, connectionId: id, blockStatus },
+        { withCredentials: true }
+      );
+
+      toast.success(data.message);
+      if (data.data) {
+        setAvailableSensorEspPins(data.data.availableSensorEspPins);
+        setAvailableRoomEspPins(data.data.availableRoomEspPins);
+        setConnections(
+          data.data.connectedPins.map(pin => ({
+            id: pin._id,
+            sensorPin: `D${pin.sensorEspPin}`,
+            roomPin: `D${pin.roomEspPin}`,
+            status: "connected",
+            roomNumber: pin.roomNumber,
+            isBlocked: pin.isBlocked
+          }))
+        );
+      }
+    } catch (err) {
+      const message = err?.response?.data?.message ||
+        err?.message || "Something went wrong";
+      toast.error(message);
+    }
   }
 
   const handleSaveConfiguration = () => {
@@ -482,8 +543,13 @@ export function ESPConnectionPage({ blockId }) {
                             <div className="flex items-center space-x-2">
                               <Switch
                                 checked={connection.isBlocked}
-                                onCheckedChange={() => handleToggleBlock(connection.id)}
-                                className={`data-[state=checked]:bg-red-500 data-[state=unchecked]:bg-emerald-500`}
+                                onCheckedChange={() =>
+                                  handleToggleBlock({
+                                    id: connection.id,
+                                    blockStatus: !connection.isBlocked
+                                  })
+                                }
+                                className={`data-[state=checked]:bg-red-500 data-[state=unchecked]:bg-emerald-500 cursor-pointer`}
                               />
                             </div>
 
@@ -492,7 +558,7 @@ export function ESPConnectionPage({ blockId }) {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveConnection(connection.id)}
-                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer"
                             >
                               Remove
                             </Button>
