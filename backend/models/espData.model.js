@@ -3,26 +3,26 @@ import { Schema } from "mongoose";
 
 const espDataSchema = new Schema(
   {
-    blockId:{
+    blockId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Block",
       required: true,
       unique: true
     },
-    allEspPins:{
+    allEspPins: {
       type: [Number],
-      default:[4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33]
+      default: [4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33]
     },
-    availableSensorEspPins:{
-      type:[Number],
-      default:[4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33],
+    availableSensorEspPins: {
+      type: [Number],
+      default: [4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33],
     },
-    availableRoomEspPins:{
-      type:[Number],
-      default:[4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33],
+    availableRoomEspPins: {
+      type: [Number],
+      default: [4, 5, 12, 13, 14, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33],
     },
-    connectedPins:{
-      type:[
+    connectedPins: {
+      type: [
         {
           status: {
             type: String,
@@ -34,22 +34,26 @@ const espDataSchema = new Schema(
             required: true,
             default: false,
           },
-          roomNumber:{
+          roomNumber: {
             type: String,
             required: true,
           },
-          sensorEspPin:{
+          sensorEspPin: {
             type: Number,
             required: true,
           },
-          roomEspPin:{
+          roomEspPin: {
             type: Number,
             required: true,
+          },
+          lastActiveAt: {
+            type: Date,
+            default: null,
           }
         },
       ],
       required: true,
-      default:[]
+      default: []
     }
   }
 );

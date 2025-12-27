@@ -56,7 +56,8 @@ export function ESPConnectionPage({ blockId }) {
             roomPin: `D${pin.roomEspPin}`,
             status: pin.status,
             roomNumber: pin.roomNumber,
-            isBlocked: pin.isBlocked
+            isBlocked: pin.isBlocked,
+            lastActiveAt: pin.lastActiveAt
           }))
         );
       }
@@ -127,9 +128,10 @@ export function ESPConnectionPage({ blockId }) {
               id: pin._id,
               sensorPin: `D${pin.sensorEspPin}`,
               roomPin: `D${pin.roomEspPin}`,
-              status: "connected",
+              status: pin.status,
               roomNumber: pin.roomNumber,
-              isBlocked: pin.isBlocked
+              isBlocked: pin.isBlocked,
+              lastActiveAt: pin.lastActiveAt
             }))
           );
         }
@@ -165,9 +167,10 @@ export function ESPConnectionPage({ blockId }) {
             id: pin._id,
             sensorPin: `D${pin.sensorEspPin}`,
             roomPin: `D${pin.roomEspPin}`,
-            status: "connected",
+            status: pin.status,
             roomNumber: pin.roomNumber,
-            isBlocked: pin.isBlocked
+            isBlocked: pin.isBlocked, 
+            lastActiveAt: pin.lastActiveAt
           }))
         );
       }
@@ -195,9 +198,10 @@ export function ESPConnectionPage({ blockId }) {
             id: pin._id,
             sensorPin: `D${pin.sensorEspPin}`,
             roomPin: `D${pin.roomEspPin}`,
-            status: "connected",
+            status: pin.status,
             roomNumber: pin.roomNumber,
-            isBlocked: pin.isBlocked
+            isBlocked: pin.isBlocked, 
+            lastActiveAt: pin.lastActiveAt
           }))
         );
       }
@@ -499,7 +503,7 @@ export function ESPConnectionPage({ blockId }) {
                               ? "bg-emerald-500 animate-pulse"
                               : "bg-gray-400"
                               }`} />
-                            <div>
+                            <div className="w-full">
                               <div className="flex flex-wrap items-center gap-2 mb-1">
                                 <span className={`font-medium ${connection.isBlocked ? "text-red-700 dark:text-red-400" : "text-emerald-900 dark:text-emerald-400"}`}>
                                   Sensor Pin: {connection.sensorPin}
@@ -517,6 +521,27 @@ export function ESPConnectionPage({ blockId }) {
                                   </>
                                 )}
                               </div>
+
+                              {/* Last Active Time Section */}
+                              <div className="mt-2 mb-3">
+                                <div className="flex items-center text-sm">
+                                  <span className="text-gray-600 dark:text-gray-400 mr-2">Last active:</span>
+                                  <span className={`font-medium ${connection.lastActiveAt
+                                    ? "text-gray-800 dark:text-gray-300"
+                                    : "text-gray-500 dark:text-gray-500"}`}>
+                                    {connection.lastActiveAt
+                                      ? new Date(connection.lastActiveAt).toLocaleString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })
+                                      : "Not activated yet"}
+                                  </span>
+                                </div>
+                              </div>
+
                               <div className="flex items-center gap-2 text-sm">
                                 <span className={`px-2 py-1 rounded text-xs ${connection.isBlocked
                                   ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
