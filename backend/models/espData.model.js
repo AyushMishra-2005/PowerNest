@@ -46,10 +46,26 @@ const espDataSchema = new Schema(
             type: Number,
             required: true,
           },
+          activeStartedAt: {
+            type: Date,
+            default: null,
+          },
           lastActiveAt: {
             type: Date,
             default: null,
-          }
+          },
+          usageStats: [
+            {
+              date: {
+                type: String,
+                required: true,
+              },
+              activeDurationSec: {
+                type: Number,
+                default: 0,
+              },
+            },
+          ],
         },
       ],
       required: true,

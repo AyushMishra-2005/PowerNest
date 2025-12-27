@@ -55,8 +55,39 @@ export const findRoomEspId = async (req, res) => {
       });
     }
 
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
 
-    connection.status = payload === "active" ? "connected" : "inactive";
+    if (payload === "active") {
+      if (!connection.activeStartedAt) {
+        connection.activeStartedAt = now;
+        connection.status = "connected";
+      }
+    } else {
+      if (connection.activeStartedAt) {
+        const diffSeconds = Math.floor(
+          (now - connection.activeStartedAt) / 1000
+        );
+
+        let todayUsage = connection.usageStats.find(
+          u => u.date === today
+        );
+
+        if (!todayUsage) {
+          connection.usageStats.push({
+            date: today,
+            activeDurationSec: diffSeconds,
+          });
+        } else {
+          todayUsage.activeDurationSec += diffSeconds;
+        }
+
+        connection.lastActiveAt = now;
+        connection.activeStartedAt = null;
+        connection.status = "inactive";
+      }
+    }
+
     await espData.save();
 
     const message = {
@@ -64,6 +95,8 @@ export const findRoomEspId = async (req, res) => {
       sensorEspPin: sensorPinNumber,
       roomEspPin: connection.roomEspPin,
       roomNumber: connection.roomNumber,
+      lastActiveAt: connection.lastActiveAt,
+      activeStartedAt: connection.activeStartedAt,
     };
 
     if (userSocketId) {
