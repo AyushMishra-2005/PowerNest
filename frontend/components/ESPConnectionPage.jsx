@@ -15,11 +15,15 @@ import axios from "axios"
 import { toast } from 'react-hot-toast'
 import { useSocketContext } from '../context/SocketContext.jsx'
 import { ShinyButton } from "@/components/ui/shiny-button"
+import useEspDataStore from "../store/espDataStore.js"
+import useBlockData from "../store/blockData.js"
 
 export function ESPConnectionPage({ blockId }) {
   const router = useRouter();
   const { blocks } = useBlockStore();
   const { socket } = useSocketContext();
+  const { setAllEspData } = useEspDataStore();
+  const { setBlockData } = useBlockData();
 
   const roomData = useMemo(() => {
     return blocks.find(b => b._id.toString() === blockId);
@@ -32,7 +36,7 @@ export function ESPConnectionPage({ blockId }) {
   }, [blocks, roomData, router]);
 
   const [sensorESPStatus, setSensorESPStatus] = useState("active")
-  const [roomESPStatus, setRoomESPStatus] = useState("inactive")
+  const [roomESPStatus, setRoomESPStatus] = useState("active")
   const [selectedSensorPin, setSelectedSensorPin] = useState("")
   const [selectedRoomPin, setSelectedRoomPin] = useState("")
   const [connections, setConnections] = useState([])
@@ -53,6 +57,7 @@ export function ESPConnectionPage({ blockId }) {
         if (data.data) {
           setAvailableSensorEspPins(data.data.availableSensorEspPins);
           setAvailableRoomEspPins(data.data.availableRoomEspPins);
+          setAllEspData(data.data);
           setConnections(
             data.data.connectedPins.map((pin) => {
               const lastActiveAt = pin.lastActiveAt
@@ -165,6 +170,7 @@ export function ESPConnectionPage({ blockId }) {
         if (data.data) {
           setAvailableSensorEspPins(data.data.availableSensorEspPins);
           setAvailableRoomEspPins(data.data.availableRoomEspPins);
+          setAllEspData(data.data);
           setConnections(
             data.data.connectedPins.map((pin) => {
               const lastActiveAt = pin.lastActiveAt
@@ -224,6 +230,7 @@ export function ESPConnectionPage({ blockId }) {
         if (data.data) {
           setAvailableSensorEspPins(data.data.availableSensorEspPins);
           setAvailableRoomEspPins(data.data.availableRoomEspPins);
+          setAllEspData(data.data);
           setConnections(
             data.data.connectedPins.map((pin) => {
               const lastActiveAt = pin.lastActiveAt
@@ -275,6 +282,7 @@ export function ESPConnectionPage({ blockId }) {
       if (data.data) {
         setAvailableSensorEspPins(data.data.availableSensorEspPins);
         setAvailableRoomEspPins(data.data.availableRoomEspPins);
+        setAllEspData(data.data);
         setConnections(
           data.data.connectedPins.map((pin) => {
             const lastActiveAt = pin.lastActiveAt
@@ -327,33 +335,27 @@ export function ESPConnectionPage({ blockId }) {
     }, 500);
   }
 
-  const handleTestConnection = (type) => {
-    console.log(`Testing ${type} ESP connection...`);
-
-    if (type === "sensor") {
-      setSensorESPStatus("testing");
-      toast.loading("Testing Sensor ESP connection...");
-      setTimeout(() => {
-        setSensorESPStatus("active");
-        toast.success("Sensor ESP connection test successful!");
-      }, 1000);
-    } else {
-      setRoomESPStatus("testing");
-      toast.loading("Testing Room ESP connection...");
-      setTimeout(() => {
-        setRoomESPStatus("active");
-        toast.success("Room ESP connection test successful!");
-      }, 1000);
-    }
+  const handleAnalyticsClick = (id) => {
+    setBlockData(roomData);
+    router.replace(`/analytics/${id}`);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-emerald-50/30 dark:from-gray-900 dark:to-emerald-950/20">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Header - Same for all screen sizes */}
-      <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b border-emerald-200 dark:border-emerald-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm mt-12 md:mt-0 lg:mt-0">
-        <div className="w-full mx-auto">
+      <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b border-emerald-200 dark:border-emerald-800 bg-white/80 dark:bg-black backdrop-blur-sm mt-12 md:mt-0 lg:mt-0">
+        <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(`/dashboard`)}
+                className="self-start sm:self-center text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-900 dark:text-emerald-400 truncate">
@@ -414,8 +416,7 @@ export function ESPConnectionPage({ blockId }) {
                           ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                           : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                     }>
-                      {sensorESPStatus === "active" ? "Active" :
-                        sensorESPStatus === "testing" ? "Testing..." : "Inactive"}
+                      {sensorESPStatus === "active" ? "Active" : "Inactive"}
                     </Badge>
                   </div>
                   <CardDescription className="text-emerald-800 dark:text-emerald-300">
@@ -456,8 +457,7 @@ export function ESPConnectionPage({ blockId }) {
                           ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                           : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                     }>
-                      {roomESPStatus === "active" ? "Active" :
-                        roomESPStatus === "testing" ? "Testing..." : "Inactive"}
+                      {roomESPStatus === "active" ? "Active" : "Inactive"}
                     </Badge>
                   </div>
                   <CardDescription className="text-emerald-800 dark:text-emerald-300">
@@ -662,8 +662,8 @@ export function ESPConnectionPage({ blockId }) {
                         >
                           <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-0">
                             <div className={`h-3 w-3 rounded-full mt-1 sm:mt-1.5 ${connection.isBlocked ? "bg-red-500 animate-pulse" : connection.status === "connected"
-                                ? "bg-emerald-500 animate-pulse"
-                                : "bg-gray-400"
+                              ? "bg-emerald-500 animate-pulse"
+                              : "bg-gray-400"
                               }`} />
                             <div className="w-full min-w-0">
                               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 mb-1">
@@ -726,7 +726,7 @@ export function ESPConnectionPage({ blockId }) {
                             </div>
                           </div>
 
-                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-end sm:self-center mt-2 sm:mt-0 lg:w-auto justify-center">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 self-end sm:self-center mt-2 sm:mt-0 lg:w-auto justify-center mb-4 md-mb-0 lg:mb-0">
                             {/* Toggle Block Switch */}
                             <div className="flex items-center space-x-2 bg-white/50 dark:bg-gray-800/30 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border border-emerald-100 dark:border-emerald-800/50">
                               <span className="text-xs text-gray-600 dark:text-gray-400">Block</span>
@@ -746,10 +746,8 @@ export function ESPConnectionPage({ blockId }) {
                             <ShinyButton
                               size="sm"
                               className="bg-gradient-to-r from-emerald-400/10 to-emerald-500/10 hover:from-emerald-400/20 hover:to-emerald-500/20 dark:from-emerald-800/20 dark:to-emerald-700/20 dark:hover:from-emerald-700/30 dark:hover:to-emerald-600/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 hover:border-emerald-300 dark:hover:border-emerald-600 cursor-pointer transition-all duration-200 px-2 sm:px-3 py-1.5 h-auto text-xs sm:text-sm"
+                              onClick={() => handleAnalyticsClick(connection.id)}
                             >
-                              <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                              </svg>
                               Analytics
                             </ShinyButton>
 
@@ -758,11 +756,17 @@ export function ESPConnectionPage({ blockId }) {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveConnection(connection.id)}
-                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer px-2 sm:px-3 py-1.5 h-auto text-xs sm:text-sm transition-colors duration-200"
+                              className="
+                              border border-red-600 dark:border-red-400
+                              text-red-600 dark:text-red-400
+                              hover:text-red-800 dark:hover:text-red-300
+                              hover:bg-red-50 dark:hover:bg-red-900/20
+                              cursor-pointer
+                              px-2 sm:px-3 py-1.5
+                              h-auto
+                              text-xs sm:text-sm
+                              transition-colors duration-200"
                             >
-                              <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
                               Remove
                             </Button>
                           </div>
