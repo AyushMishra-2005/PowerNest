@@ -22,6 +22,8 @@ import { format, subDays, eachDayOfInterval, isSameDay, parseISO } from 'date-fn
 import { redirect, useRouter } from 'next/navigation';
 import useEspDataStore from '../store/espDataStore';
 import useBlockData from '../store/blockData';
+import axios from 'axios'
+import server from '../envirnoment.js'
 
 ChartJS.register(
   CategoryScale,
@@ -41,38 +43,40 @@ export function AnalyticsPage({ connectionId }) {
   const [connectionData, setConnectionData] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [timeRange, setTimeRange] = useState(10);
-  const {blockData} = useBlockData();
+  const { blockData } = useBlockData();
 
   useEffect(() => {
-    if (!allEspData || !connectionId) {
+    if (!blockData || !connectionId) {
       setLoading(false);
       return;
     }
 
     setLoading(true);
+    const getRoomUsage = async () => {
+      try {
+        const blockId = blockData._id;
 
-    try {
-      const connection = allEspData.connectedPins?.find(
-        pin => pin._id.toString() === connectionId
-      );
+        const { data } = await axios.post(
+          `${server}/esp/get-room-data`,
+          {blockId, connectionId},
+          {withCredentials: true}
+        );
 
-      if (connection) {
-        setConnectionData(connection);
-        prepareChartData(connection.usageStats);
-      } else {
-        toast.error("Connection not found in the data");
-        router.push(`/dashboard`);
+        setConnectionData(data.data);
+        prepareChartData(data.data.usageStats);
+
+      } catch (err) {
+        console.log(err);
+      }finally{
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error processing connection data:", error);
-    } finally {
-      setLoading(false);
     }
-  }, [allEspData, connectionId]);
+    getRoomUsage();
+  }, [blockData, connectionId]);
 
   const prepareChartData = (usageStats, customTimeRange = timeRange) => {
     const daysToShow = customTimeRange || timeRange;
-    
+
     if (!usageStats || usageStats.length === 0) {
       const today = new Date();
       const daysAgo = subDays(today, daysToShow - 1);

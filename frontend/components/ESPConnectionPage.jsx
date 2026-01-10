@@ -46,8 +46,10 @@ export function ESPConnectionPage({ blockId }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (!blockId) return;
     const getEspData = async () => {
       setIsLoading(true);
+      console.log(blockId);
       try {
         const { data } = await axios.post(
           `${server}/esp/get-esp-data`,
