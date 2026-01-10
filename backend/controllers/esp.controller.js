@@ -253,6 +253,58 @@ export const blockConnection = async (req, res) => {
   }
 }
 
+export const getUsageData = async (req, res) => {
+  const { blockId, connectionId } = req.body;
+  if (!blockId || !connectionId) {
+    return res.status(400).json({
+      message: "all fields are required",
+    });
+  }
+  try {
+
+    const userId = req.user._id;
+
+    const blockData = await Block.findById(blockId);
+    if (!blockData) {
+      return res.status(404).json({
+        message: "block doesn't exist",
+      });
+    }
+
+    if (!blockData.userId.equals(userId)) {
+      return res.status(403).json({
+        message: "You cannot modify this block",
+      });
+    }
+
+    const espData = await EspData.findOne({ blockId });
+
+    if (!espData) {
+      return res.status(404).json({
+        message: "esp data doesn't exist",
+      });
+    }
+
+    const connection = espData.connectedPins.find(
+      pin => pin._id.toString() === connectionId
+    );
+
+    if (!connection) {
+      return res.status(404).json({
+        message: "connection not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "data fetch successful",
+      data:connection
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({ message: "Error occurred" });
+  }
+}
 
 
 
