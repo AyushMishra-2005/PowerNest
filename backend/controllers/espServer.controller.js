@@ -111,6 +111,7 @@ export const findRoomEspId = async (req, res) => {
       roomEspId: block.roomEspId,
       roomEspPin: connection.roomEspPin,
       roomNumber: connection.roomNumber,
+      mode: connection.mode,
     });
 
   } catch (err) {

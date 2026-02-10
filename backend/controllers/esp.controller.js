@@ -2,7 +2,7 @@ import EspData from '../models/espData.model.js'
 import Block from '../models/block.model.js';
 
 export const addPin = async (req, res) => {
-  let { sensorEspPin, roomEspPin, blockId, roomNumber } = req.body;
+  let { sensorEspPin, roomEspPin, blockId, roomNumber, connectionMode} = req.body;
 
   if (
     sensorEspPin === undefined ||
@@ -16,6 +16,14 @@ export const addPin = async (req, res) => {
       message: "all fields are required",
     });
   }
+
+  if(connectionMode !== "auto" && connectionMode !== "manual"){
+    return res.status(400).json({
+      success: false,
+      message: "Invalid connection mode!",
+    });
+  }
+
   try {
 
     sensorEspPin = Number(sensorEspPin);
@@ -58,7 +66,8 @@ export const addPin = async (req, res) => {
     espData.connectedPins.push({
       roomNumber,
       sensorEspPin,
-      roomEspPin
+      roomEspPin,
+      mode: connectionMode,
     });
 
     espData.availableSensorEspPins = espData.availableSensorEspPins.filter(pin => pin != sensorEspPin);
@@ -252,6 +261,78 @@ export const blockConnection = async (req, res) => {
     return res.status(501).json({ message: "Error occurred" });
   }
 }
+
+export const toggleConnection = async (req, res) => {
+  const { blockId, connectionId, connectionMode } = req.body;
+  if (!blockId || !connectionId) {
+    return res.status(400).json({
+      message: "all fields are required",
+    });
+  }
+
+  if(connectionMode !== "auto" && connectionMode !== "manual"){
+    return res.status(400).json({
+      success: false,
+      message: "Invalid connection mode!",
+    });
+  }
+
+
+  try {
+
+    const userId = req.user._id;
+
+    const blockData = await Block.findById(blockId);
+    if (!blockData) {
+      return res.status(404).json({
+        message: "block doesn't exist",
+      });
+    }
+
+    if (!blockData.userId.equals(userId)) {
+      return res.status(403).json({
+        message: "You cannot modify this block",
+      });
+    }
+
+    const espData = await EspData.findOne({ blockId });
+
+    if (!espData) {
+      return res.status(404).json({
+        message: "esp data doesn't exist",
+      });
+    }
+
+    const connection = espData.connectedPins.find(
+      pin => pin._id.toString() === connectionId
+    );
+
+    if (!connection) {
+      return res.status(404).json({
+        message: "connection not found",
+      });
+    }
+
+    if(connectionMode === "auto"){
+      connection.mode = "manual";
+    }else{
+      connection.mode = "auto"
+    }
+
+    await espData.save();
+
+    return res.status(200).json({
+      message: `connection shifted to ${connection.mode}`,
+      data: espData,
+      mode: connection.mode,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({ message: "Error occurred" });
+  }
+}
+
 
 export const getUsageData = async (req, res) => {
   const { blockId, connectionId } = req.body;

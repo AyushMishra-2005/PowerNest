@@ -46,6 +46,11 @@ const espDataSchema = new Schema(
             type: Number,
             required: true,
           },
+          mode:{
+            type: String,
+            default: "auto",
+            required: true,
+          },
           activeStartedAt: {
             type: Date,
             default: null,
