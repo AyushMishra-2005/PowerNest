@@ -10,7 +10,6 @@ const char* mqtt_server = "broker.hivemq.com";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-
 int relayPins[] = {
   4, 5, 12, 13, 14,
   18, 19, 21, 22, 23,
@@ -21,7 +20,9 @@ int relayPins[] = {
 int pinCount = sizeof(relayPins) / sizeof(relayPins[0]);
 
 unsigned long lastActiveTime[40];
-const unsigned long RELAY_TIMEOUT = 4000; 
+bool manualHold[40];                 
+const unsigned long RELAY_TIMEOUT = 4000;
+
 
 void callback(char* topic, byte* payload, unsigned int length) {
   String msg;
@@ -33,10 +34,23 @@ void callback(char* topic, byte* payload, unsigned int length) {
               .substring(String(topic).lastIndexOf("/") + 1)
               .toInt();
 
-  if (msg == "active") {
+  if (msg == "ON") {
     digitalWrite(pin, HIGH);
-    lastActiveTime[pin] = millis(); 
-    Serial.println("Relay PIN " + String(pin) + " -> ON");
+    manualHold[pin] = false;          
+    lastActiveTime[pin] = millis();
+    Serial.println("Relay PIN " + String(pin) + " -> ON (AUTO)");
+  }
+
+  else if (msg == "ON_MANUAL") {
+    digitalWrite(pin, HIGH);
+    manualHold[pin] = true;           
+    Serial.println("Relay PIN " + String(pin) + " -> ON (MANUAL)");
+  }
+
+  else if (msg == "OFF") {
+    digitalWrite(pin, LOW);
+    manualHold[pin] = false;
+    Serial.println("Relay PIN " + String(pin) + " -> OFF");
   }
 }
 
@@ -57,13 +71,16 @@ void connectMQTT() {
   }
 }
 
+
 void setup() {
   Serial.begin(115200);
 
   for (int i = 0; i < pinCount; i++) {
-    pinMode(relayPins[i], OUTPUT);
-    digitalWrite(relayPins[i], LOW);
-    lastActiveTime[relayPins[i]] = 0;
+    int pin = relayPins[i];
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
+    lastActiveTime[pin] = 0;
+    manualHold[pin] = false;          
   }
 
   connectWiFi();
@@ -74,6 +91,7 @@ void setup() {
   Serial.println("RELAY ESP READY: " ESP_ID);
 }
 
+
 void loop() {
   if (!client.connected()) connectMQTT();
   client.loop();
@@ -83,11 +101,12 @@ void loop() {
   for (int i = 0; i < pinCount; i++) {
     int pin = relayPins[i];
 
-    if (digitalRead(pin) == HIGH &&
+    if (!manualHold[pin] &&
+        digitalRead(pin) == HIGH &&
         now - lastActiveTime[pin] > RELAY_TIMEOUT) {
 
       digitalWrite(pin, LOW);
-      Serial.println("Relay PIN " + String(pin) + "auto OFF");
+      Serial.println("Relay PIN " + String(pin) + " -> AUTO OFF");
     }
   }
 
