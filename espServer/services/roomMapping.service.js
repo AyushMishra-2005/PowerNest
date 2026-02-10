@@ -11,7 +11,8 @@ export const getRoomEspId = async ({sensorEspId, pin, payload}) => {
     console.log(data.roomEspId);
     const newData = {
       roomEspId: data.roomEspId,
-      roomEspPin: data.roomEspPin
+      roomEspPin: data.roomEspPin,
+      mode: data.mode,
     }
 
     return newData;

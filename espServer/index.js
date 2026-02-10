@@ -30,10 +30,24 @@ mqttClient.on("message", async (topic, message) => {
     const mapping = await getRoomEspId({ sensorEspId, pin, payload });
     if (!mapping) return;
 
-    const { roomEspId, roomEspPin } = mapping;
+    const { roomEspId, roomEspPin, mode } = mapping;
 
     const relayTopic = `powernest/${roomEspId}/relay/${roomEspPin}`;
-    mqttClient.publish(relayTopic, payload);
+    
+    if(mode === 'auto'){
+      if(payload === 'active'){
+        mqttClient.publish(relayTopic, 'ON');
+      }else if(payload === 'stopped'){
+        mqttClient.publish(relayTopic, 'OFF');
+      }
+    }
+
+    else if(mode === 'manual'){
+      if(payload === 'active'){
+        mqttClient.publish(relayTopic, "ON_MANUAL");
+      }
+    }
+
 
   } catch (err) {
     console.error("MQTT handler error:", err.message);
