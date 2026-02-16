@@ -7,8 +7,7 @@ export const getRoomEspId = async ({sensorEspId, pin, payload}) => {
       `${server}/main-server/get-roomId`,
       { sensorEspId, pin, payload },
     );
-
-    console.log(data.roomEspId);
+    
     const newData = {
       roomEspId: data.roomEspId,
       roomEspPin: data.roomEspPin,

@@ -5,10 +5,6 @@ export const handlePir = async (topic, payload) => {
 
   const [, sensorEspId, , pin] = topic.split("/");
 
-  console.log(
-    `Motion from ${sensorEspId} | PIN ${pin} | STATE ${payload}`
-  );
-
   const mapping = await getRoomEspId({
     sensorEspId,
     pin,
