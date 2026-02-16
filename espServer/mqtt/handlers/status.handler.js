@@ -3,8 +3,6 @@ import server from '../../envirnoment.js';
 
 export const handleStatus = async (topis, payload) => {
   const parsedJsonData = JSON.parse(payload);
-  console.log("ESP ID:", parsedJsonData.espId);
-  console.log("Active Pins:", parsedJsonData.activePins);
 
   const espData = {
     espId: parsedJsonData.espId,

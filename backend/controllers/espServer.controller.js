@@ -97,6 +97,7 @@ export const findRoomEspId = async (req, res) => {
       roomNumber: connection.roomNumber,
       lastActiveAt: connection.lastActiveAt,
       activeStartedAt: connection.activeStartedAt,
+      connectionId: connection._id
     };
 
     if (userSocketId) {
@@ -121,3 +122,73 @@ export const findRoomEspId = async (req, res) => {
     });
   }
 };
+
+
+export const getActivePins = async (req, res) => {
+  const { espId, activePins } = req.body;
+
+  if (!espId || !activePins) {
+    return res.status(400).json({ message: "espId and activePins required." });
+  }
+
+  try {
+    const block = await Block.findOne({ roomEspId: espId });
+
+    if (!block) {
+      return res.status(404).json({
+        message: "Block not found",
+      });
+    }
+
+    const userId = block.userId;
+    const userSocketId = getUserSocketId(userId);
+    const blockId = block._id;
+
+    const espData = await EspData.findOne({ blockId });
+
+    if (!espData) {
+      return res.status(404).json({
+        message: "ESP data not found for this block",
+      });
+    }
+
+    const message = {
+      activePins,
+      currBlockId: blockId
+    }
+
+    if(userSocketId){
+      io.to(userSocketId).emit("active_pins", message);
+    }
+
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
