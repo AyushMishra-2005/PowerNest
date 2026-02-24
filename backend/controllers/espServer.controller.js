@@ -1,6 +1,7 @@
 import Block from "../models/block.model.js";
 import EspData from "../models/espData.model.js";
 import { io, getUserSocketId } from "../SocketIO/server.js";
+import redis from '../config/redis.js'
 
 export const findRoomEspId = async (req, res) => {
   const { sensorEspId, pin, payload } = req.body;
@@ -132,32 +133,48 @@ export const getActivePins = async (req, res) => {
   }
 
   try {
-    const block = await Block.findOne({ roomEspId: espId });
 
-    if (!block) {
-      return res.status(404).json({
-        message: "Block not found",
+    const cacheKey = `esp:${espId}`;
+    let cacheData = await redis.get(cacheKey);
+
+    let userId;
+    let blockId;
+
+    if (cacheData) {
+      console.log("Redis cache hit");
+      userId = cacheData.userId;
+      blockId = cacheData.blockId;
+    } else {
+      console.log("cache miss");
+
+      const block = await Block.findOne({ roomEspId: espId });
+      if (!block) {
+        return res.status(404).json({
+          message: "Block not found",
+        });
+      }
+
+      userId = block.userId;
+      blockId = block._id.toString();
+
+      await redis.set(cacheKey, {
+        userId: userId,
+        blockId: blockId,
       });
+      
+      await redis.expire(cacheKey, 30);
+
     }
 
-    const userId = block.userId;
+
     const userSocketId = getUserSocketId(userId);
-    const blockId = block._id;
-
-    const espData = await EspData.findOne({ blockId });
-
-    if (!espData) {
-      return res.status(404).json({
-        message: "ESP data not found for this block",
-      });
-    }
 
     const message = {
       activePins,
       currBlockId: blockId
     }
 
-    if(userSocketId){
+    if (userSocketId) {
       io.to(userSocketId).emit("active_pins", message);
     }
 
