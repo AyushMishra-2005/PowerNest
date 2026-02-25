@@ -7,8 +7,9 @@ import userRoute from './routes/user.route.js'
 import { v2 as cloudinary } from 'cloudinary';
 import blockRoute from './routes/block.route.js'
 import espRoute from './routes/esp.route.js'
-import {app, io, server} from './SocketIO/server.js'
+import { app, io, server } from './SocketIO/server.js'
 import espServerRoute from './routes/espServer.route.js'
+import redis from './config/redis.js';
 
 dotenv.config();
 app.use(express.json());
@@ -19,13 +20,13 @@ app.use(cookieParser());
 const PORT = process.env.PORT || 8000;
 const DB_URL = process.env.DB_URL;
 
-const allowedOrigins =  ["http://localhost:3000", "http://localhost:9000"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:9000"];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if(!origin || allowedOrigins.includes(origin)){
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
-    }else{
+    } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -68,17 +69,33 @@ app.post('/deleteImage', async (req, res) => {
     const result = await cloudinary.uploader.destroy(publicId, {
       invalidate: true,
     });
-    res.status(200).json({result});
+    res.status(200).json({ result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 
-server.listen(PORT, () => {
-  console.log("app is listening at the port: " + PORT);
-});
+const startServer = async () => {
+  try {
+    console.log("Connecting to Redis...");
+    await redis.ping();
 
+    console.log("Clearing Redis on startup...");
+    await redis.flushall();
+
+    console.log("Redis cleared successfully");
+
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  } catch (err) {
+    console.error("Startup error:", err);
+  }
+};
+
+startServer();
 
 
 
