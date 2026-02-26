@@ -72,23 +72,6 @@ export function ESPConnectionPage({ blockId }) {
           setAllEspData(data.data);
 
           const processedConnections = data.data.connectedPins.map((pin) => {
-            const lastActiveAt = pin.lastActiveAt
-              ? new Date(pin.lastActiveAt)
-              : null;
-
-            const activeStartedAt = pin.activeStartedAt
-              ? new Date(pin.activeStartedAt)
-              : null;
-
-            let displayLastActiveAt = lastActiveAt;
-
-            if (
-              activeStartedAt &&
-              (!lastActiveAt || activeStartedAt > lastActiveAt)
-            ) {
-              displayLastActiveAt = activeStartedAt;
-            }
-
             return {
               id: pin._id,
               sensorPin: `D${pin.sensorEspPin}`,
@@ -96,7 +79,6 @@ export function ESPConnectionPage({ blockId }) {
               status: pin.status,
               roomNumber: pin.roomNumber,
               isBlocked: pin.isBlocked,
-              lastActiveAt: displayLastActiveAt,
               mode: pin.mode
             };
           });
@@ -126,7 +108,7 @@ export function ESPConnectionPage({ blockId }) {
     if (!socket) return;
 
     const handleActiveEvent = (message) => {
-      const { sensorEspPin, activeStartedAt, connectionId } = message;
+      const { sensorEspPin, connectionId } = message;
 
       setConnections((prev) =>
         prev.map((conn) =>
@@ -134,7 +116,6 @@ export function ESPConnectionPage({ blockId }) {
             ? {
               ...conn,
               status: "connected",
-              lastActiveAt: activeStartedAt,
             }
             : conn
         )
@@ -142,7 +123,7 @@ export function ESPConnectionPage({ blockId }) {
     };
 
     const handleStoppedEvent = (message) => {
-      const { sensorEspPin, lastActiveAt, connectionId } = message;
+      const { sensorEspPin, connectionId } = message;
 
       setConnections((prev) =>
         prev.map((conn) =>
@@ -150,7 +131,6 @@ export function ESPConnectionPage({ blockId }) {
             ? {
               ...conn,
               status: "inactive",
-              lastActiveAt
             }
             : conn
         )
@@ -217,23 +197,6 @@ export function ESPConnectionPage({ blockId }) {
           setAllEspData(data.data);
 
           const processedConnections = data.data.connectedPins.map((pin) => {
-            const lastActiveAt = pin.lastActiveAt
-              ? new Date(pin.lastActiveAt)
-              : null;
-
-            const activeStartedAt = pin.activeStartedAt
-              ? new Date(pin.activeStartedAt)
-              : null;
-
-            let displayLastActiveAt = lastActiveAt;
-
-            if (
-              activeStartedAt &&
-              (!lastActiveAt || activeStartedAt > lastActiveAt)
-            ) {
-              displayLastActiveAt = activeStartedAt;
-            }
-
             return {
               id: pin._id,
               sensorPin: `D${pin.sensorEspPin}`,
@@ -241,7 +204,6 @@ export function ESPConnectionPage({ blockId }) {
               status: pin.status,
               roomNumber: pin.roomNumber,
               isBlocked: pin.isBlocked,
-              lastActiveAt: displayLastActiveAt,
             };
           });
 
@@ -285,23 +247,6 @@ export function ESPConnectionPage({ blockId }) {
           setAllEspData(data.data);
 
           const processedConnections = data.data.connectedPins.map((pin) => {
-            const lastActiveAt = pin.lastActiveAt
-              ? new Date(pin.lastActiveAt)
-              : null;
-
-            const activeStartedAt = pin.activeStartedAt
-              ? new Date(pin.activeStartedAt)
-              : null;
-
-            let displayLastActiveAt = lastActiveAt;
-
-            if (
-              activeStartedAt &&
-              (!lastActiveAt || activeStartedAt > lastActiveAt)
-            ) {
-              displayLastActiveAt = activeStartedAt;
-            }
-
             return {
               id: pin._id,
               sensorPin: `D${pin.sensorEspPin}`,
@@ -309,7 +254,6 @@ export function ESPConnectionPage({ blockId }) {
               status: pin.status,
               roomNumber: pin.roomNumber,
               isBlocked: pin.isBlocked,
-              lastActiveAt: displayLastActiveAt,
               mode: pin.mode,
             };
           });
@@ -348,23 +292,6 @@ export function ESPConnectionPage({ blockId }) {
         setAllEspData(data.data);
 
         const processedConnections = data.data.connectedPins.map((pin) => {
-          const lastActiveAt = pin.lastActiveAt
-            ? new Date(pin.lastActiveAt)
-            : null;
-
-          const activeStartedAt = pin.activeStartedAt
-            ? new Date(pin.activeStartedAt)
-            : null;
-
-          let displayLastActiveAt = lastActiveAt;
-
-          if (
-            activeStartedAt &&
-            (!lastActiveAt || activeStartedAt > lastActiveAt)
-          ) {
-            displayLastActiveAt = activeStartedAt;
-          }
-
           return {
             id: pin._id,
             sensorPin: `D${pin.sensorEspPin}`,
@@ -372,7 +299,6 @@ export function ESPConnectionPage({ blockId }) {
             status: pin.status,
             roomNumber: pin.roomNumber,
             isBlocked: pin.isBlocked,
-            lastActiveAt: displayLastActiveAt,
             mode: pin.mode,
           };
         });
@@ -837,28 +763,7 @@ export function ESPConnectionPage({ blockId }) {
                                 )}
                               </div>
 
-                              {/* Last Active Time Section */}
-                              <div className="mt-2 mb-3">
-                                <div className="flex items-center text-xs sm:text-sm">
-                                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-500" />
-                                  <span className="text-gray-600 dark:text-gray-400 mr-1 sm:mr-2">Last active:</span>
-                                  <span className={`font-medium ${connection.lastActiveAt
-                                    ? "text-gray-800 dark:text-gray-300"
-                                    : "text-gray-500 dark:text-gray-500"}`}>
-                                    {connection.lastActiveAt
-                                      ? new Date(connection.lastActiveAt).toLocaleString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                      })
-                                      : "Not activated yet"}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                              <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm mt-2">
                                 {/* Badge uses displayStatuses */}
                                 <span className={`px-2 py-1 rounded ${connection.isBlocked
                                   ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
@@ -881,7 +786,7 @@ export function ESPConnectionPage({ blockId }) {
                                   {connectionModes[connection.id] === "auto" ? "Auto" : "Manual"}
                                 </span>
                                 <span className="text-gray-600 dark:text-gray-400 hidden sm:inline">•</span>
-                                <span className="text-gray-600 dark:text-gray-400 truncate">ID: {connection.id.slice(-8)}</span>
+                                <span className="text-gray-600 dark:text-gray-400 truncate">ID: {connection.id}</span>
                               </div>
                             </div>
                           </div>
