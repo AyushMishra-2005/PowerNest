@@ -51,14 +51,6 @@ const espDataSchema = new Schema(
             default: "auto",
             required: true,
           },
-          activeStartedAt: {
-            type: Date,
-            default: null,
-          },
-          lastActiveAt: {
-            type: Date,
-            default: null,
-          },
           usageStats: [
             {
               date: {
