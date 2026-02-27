@@ -13,6 +13,15 @@ mqttClient.on("connect", () => {
 
 mqttClient.on("message", handleMessage);
 
+export const publishRelayCommand = (espId, pin, action) => {
+  if(!mqttClient.connected){
+    throw new Error("MQTT not connected!");
+  }
+
+  const topic = `powernest/${espId}/relay/${pin}`;
+  mqttClient.publish(topic, action);
+}
+
 export default mqttClient;
 
 
