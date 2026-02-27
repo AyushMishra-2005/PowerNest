@@ -51,10 +51,11 @@ export function ESPConnectionPage({ blockId }) {
   const [connectionPowerStates, setConnectionPowerStates] = useState({});
 
   const [displayStatuses, setDisplayStatuses] = useState({});
+  
 
   useEffect(() => {
     connectionRef.current = connections;
-  },[connections]);
+  }, [connections]);
 
   useEffect(() => {
     if (!blockId) return;
@@ -138,15 +139,15 @@ export function ESPConnectionPage({ blockId }) {
     };
 
     const handleActiveRoomPins = (message) => {
-      const {activePins, currBlockId} = message;
+      const { activePins, currBlockId } = message;
 
-      if(currBlockId !== blockId) return;
+      if (currBlockId !== blockId) return;
 
       const initialDisplay = {};
 
       connectionRef.current.forEach(conn => {
         const roomPinNumber = Number(conn.roomPin.replace("D", ""));
-        if(activePins.includes(roomPinNumber)){
+        if (activePins.includes(roomPinNumber)) {
           initialDisplay[conn.id] = "connected";
         }
       });
@@ -162,7 +163,7 @@ export function ESPConnectionPage({ blockId }) {
     socket.on("stopped", handleStoppedEvent);
     socket.on("active_pins", handleActiveRoomPins);
     socket.on("connection_error", handleConnectionError);
-    
+
 
     return () => {
       socket.off("active", handleActiveEvent);
@@ -367,11 +368,20 @@ export function ESPConnectionPage({ blockId }) {
 
   }
 
-  const togglePowerState = (connectionId) => {
-    setConnectionPowerStates(prev => ({
-      ...prev,
-      [connectionId]: !prev[connectionId]
-    }));
+  const togglePowerState = async (connectionId, roomPin) => {
+    roomPin = Number(roomPin.slice(1));
+
+    try {
+      const data = await axios.post(
+        `${server}/esp/power-off`,
+        { connectionId, blockId, roomPin },
+        { withCredentials: true }
+      );
+
+    } catch (err) {
+      console.log(err);
+    }
+
   }
 
   return (
@@ -826,11 +836,11 @@ export function ESPConnectionPage({ blockId }) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => togglePowerState(connection.id)}
-                              disabled={connectionModes[connection.id] === "auto"}
+                              onClick={() => togglePowerState(connection.id, connection.roomPin)}
+                              disabled={connectionModes[connection.id] === "auto" || connection.status === "connected" || displayStatuses[connection.id] === undefined}
                               className={`
                                 px-2 sm:px-3 py-1.5 h-auto text-xs sm:text-sm
-                                transition-all duration-200
+                                transition-all duration-200 cursor-pointer
                                 ${connectionModes[connection.id] === "auto"
                                   ? "opacity-40 cursor-not-allowed border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-600"
                                   : connectionPowerStates[connection.id]
