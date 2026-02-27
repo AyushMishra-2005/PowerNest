@@ -110,55 +110,55 @@ export const findRoomEspId = async (req, res) => {
         io.to(userSocketId).emit("stopped", message);
         if (connectionMode !== "auto") {
           const mailOptions = {
-  from: process.env.SENDER_EMAIL,
-  to: email,
-  subject: "PowerNest Alert: Room Inactive",
-  html: `
-  <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-    
-    <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-      
-      <!-- Header -->
-      <div style="background-color: #0f172a; padding: 20px; text-align: center;">
-        <h2 style="color: #22c55e; margin: 0;">PowerNest Alert</h2>
-      </div>
+            from: process.env.SENDER_EMAIL,
+            to: email,
+            subject: "PowerNest Alert: Room Inactive",
+            html: `
+              <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                
+                <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                  
+                  <!-- Header -->
+                  <div style="background-color: #0f172a; padding: 20px; text-align: center;">
+                    <h2 style="color: #22c55e; margin: 0;">PowerNest Alert</h2>
+                  </div>
 
-      <!-- Body -->
-      <div style="padding: 25px; color: #111827; font-size: 14px; line-height: 1.6;">
-        
-        <p>Hi <strong style="color:#22c55e;">${userName}</strong>,</p>
+                  <!-- Body -->
+                  <div style="padding: 25px; color: #111827; font-size: 14px; line-height: 1.6;">
+                    
+                    <p>Hi <strong style="color:#22c55e;">${userName}</strong>,</p>
 
-        <p>The room appears to be unoccupied at the moment.</p>
+                    <p>The room appears to be unoccupied at the moment.</p>
 
-        <div style="background:#f9fafb; padding:15px; border-left:4px solid #22c55e; border-radius:4px;">
-          <p style="margin:5px 0;">
-            Block: <strong>${blockName}</strong><br/>
-            Room Number: <strong>${roomNumber}</strong><br/>
-            Room ID: <strong>${roomId}</strong>
-          </p>
-        </div>
+                    <div style="background:#f9fafb; padding:15px; border-left:4px solid #22c55e; border-radius:4px;">
+                      <p style="margin:5px 0;">
+                        Block: <strong>${blockName}</strong><br/>
+                        Room Number: <strong>${roomNumber}</strong><br/>
+                        Room ID: <strong>${roomId}</strong>
+                      </p>
+                    </div>
 
-        <p style="margin-top:20px;">
-          You may turn off the power to save energy and optimize usage.
-        </p>
+                    <p style="margin-top:20px;">
+                      You may turn off the power to save energy and optimize usage.
+                    </p>
 
-        <p>
-          Manage it directly from your <span style="color:#22c55e; font-weight:bold;">PowerNest Dashboard</span>.
-        </p>
+                    <p>
+                      Manage it directly from your <span style="color:#22c55e; font-weight:bold;">PowerNest Dashboard</span>.
+                    </p>
 
-      </div>
+                  </div>
 
-      <!-- Footer -->
-      <div style="background:#111827; color:#ffffff; text-align:center; padding:15px; font-size:12px;">
-        © 2026 PowerNest | Smart Energy Automation
-      </div>
+                  <!-- Footer -->
+                  <div style="background:#111827; color:#ffffff; text-align:center; padding:15px; font-size:12px;">
+                    © 2026 PowerNest | Smart Energy Automation
+                  </div>
 
-    </div>
-  </div>
-  `
-};
+                </div>
+              </div>
+            `
+          };
 
-await transporter.sendMail(mailOptions);
+          await transporter.sendMail(mailOptions);
         }
       }
     }
@@ -223,7 +223,10 @@ export const getActivePins = async (req, res) => {
 
     const stateKey = `esp_state:${espId}`;
     const now = Date.now();
-    const today = new Date().toISOString().split("T")[0];
+
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    }).format(new Date());
 
     const previousState = await redis.hgetall(stateKey) || {};
     const previousPins = Object.keys(previousState).map(Number);
@@ -243,29 +246,44 @@ export const getActivePins = async (req, res) => {
         const startTime = Number(previousState[pin]);
         const durationSec = (now - startTime) / 1000;
 
-        console.log(pin);
-        console.log(durationSec);
-
-        await EspData.updateOne(
+        const result = await EspData.updateOne(
           {
             blockId,
-            "connectedPins.roomEspPin": pin,
           },
           {
             $inc: {
-              "connectedPins.$.usageStats.$[day].activeDurationSec": durationSec,
+              "connectedPins.$[pinElem].usageStats.$[dayElem].activeDurationSec":
+                durationSec,
             },
           },
           {
-            arrayFilters: [{ "day.date": today }],
+            arrayFilters: [
+              { "pinElem.roomEspPin": pin },
+              { "dayElem.date": today },
+            ],
           }
         );
+
+        if (result.modifiedCount === 0) {
+          await EspData.updateOne(
+            {
+              blockId,
+              "connectedPins.roomEspPin": pin,
+            },
+            {
+              $push: {
+                "connectedPins.$.usageStats": {
+                  date: today,
+                  activeDurationSec: durationSec,
+                },
+              },
+            }
+          );
+        }
 
         await redis.hdel(stateKey, pin);
       }
     }
-
-
 
     const userSocketId = getUserSocketId(userId);
 
@@ -285,7 +303,6 @@ export const getActivePins = async (req, res) => {
       message: "Internal server error",
     });
   }
-
 }
 
 

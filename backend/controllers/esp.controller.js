@@ -1,8 +1,10 @@
-import EspData from '../models/espData.model.js'
+import EspData from '../models/espData.model.js';
 import Block from '../models/block.model.js';
+import espserver from '../envirnoment.js';
+import axios from 'axios';
 
 export const addPin = async (req, res) => {
-  let { sensorEspPin, roomEspPin, blockId, roomNumber, connectionMode} = req.body;
+  let { sensorEspPin, roomEspPin, blockId, roomNumber, connectionMode } = req.body;
 
   if (
     sensorEspPin === undefined ||
@@ -17,7 +19,7 @@ export const addPin = async (req, res) => {
     });
   }
 
-  if(connectionMode !== "auto" && connectionMode !== "manual"){
+  if (connectionMode !== "auto" && connectionMode !== "manual") {
     return res.status(400).json({
       success: false,
       message: "Invalid connection mode!",
@@ -28,8 +30,6 @@ export const addPin = async (req, res) => {
 
     sensorEspPin = Number(sensorEspPin);
     roomEspPin = Number(roomEspPin);
-
-    console.log({ sensorEspPin, roomEspPin, blockId });
 
     const userId = req.user._id;
 
@@ -270,7 +270,7 @@ export const toggleConnection = async (req, res) => {
     });
   }
 
-  if(connectionMode !== "auto" && connectionMode !== "manual"){
+  if (connectionMode !== "auto" && connectionMode !== "manual") {
     return res.status(400).json({
       success: false,
       message: "Invalid connection mode!",
@@ -313,9 +313,9 @@ export const toggleConnection = async (req, res) => {
       });
     }
 
-    if(connectionMode === "auto"){
+    if (connectionMode === "auto") {
       connection.mode = "manual";
-    }else{
+    } else {
       connection.mode = "auto"
     }
 
@@ -378,7 +378,7 @@ export const getUsageData = async (req, res) => {
 
     return res.status(200).json({
       message: "data fetch successful",
-      data:connection
+      data: connection
     });
 
   } catch (err) {
@@ -386,6 +386,52 @@ export const getUsageData = async (req, res) => {
     return res.status(501).json({ message: "Error occurred" });
   }
 }
+
+
+export const roomPinOff = async (req, res) => {
+  const { connectionId, blockId, roomPin } = req.body;
+  if (!connectionId || !blockId || !roomPin) {
+    return res.status(400).json({
+      message: "connectionId and blockId are required!"
+    });
+  }
+  try {
+    const block = await Block.findById(blockId);
+    const espId = block.roomEspId;
+    const pin = roomPin;
+
+    await axios.post(
+      `${espserver}/relay/turn-off`,
+      {espId, pin}
+    );
+
+    return res.status(200).json({message: "success"});
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({ message: "Error occurred" });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
