@@ -80,6 +80,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
               .substring(String(topic).lastIndexOf("/") + 1)
               .toInt();
 
+  bool validPin = false;
+
+  for (int i = 0; i < pinCount; i++) {
+    if (relayPins[i] == pin) {
+      validPin = true;
+      break;
+    }
+  }
+
+  if (!validPin) {
+    Serial.println("Invalid Pin Received!");
+    return;  
+  }
+
   if (msg == "ON") {
     digitalWrite(pin, HIGH);
     manualHold[pin] = false;
@@ -100,6 +114,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
     manualHold[pin] = false;
     activePinsState[pin] = false;  
     Serial.println("Relay PIN " + String(pin) + " -> OFF");
+  }
+
+  else if(msg == "MANUAL_OFF"){
+    digitalWrite(pin, LOW);
+    manualHold[pin] = false;
+    activePinsState[pin] = false;
+    Serial.println("Relay PIN " + String(pin) + " -> OFF (MANUAL)");
   }
 }
 
@@ -168,6 +189,7 @@ void loop() {
   }
 
   if (hasChanged()) {
+    lastStatusSend = now;
     sendActivePins();
     copyCurrentToLast();
   }
