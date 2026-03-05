@@ -23,7 +23,7 @@ app.post("/relay/turn-off", async (req, res) => {
   }
 });
 
-app.post('/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({
     status: "OK",
     service: "espServer",
