@@ -4,7 +4,7 @@ import express from 'express'
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:9000", "https://powernest-espserver.onrender.com"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:9000", "https://powernest-espserver.onrender.com", "https://powernest-self.vercel.app"];
 const server = http.createServer(app);
 
 const io = new Server(server, {
