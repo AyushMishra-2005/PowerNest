@@ -23,6 +23,14 @@ app.post("/relay/turn-off", async (req, res) => {
   }
 });
 
+app.post('/health', (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    service: "espServer",
+    timestamp: new Date().toISOString()
+  });
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
