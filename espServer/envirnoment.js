@@ -1,2 +1,3 @@
-const server = "http://localhost:8000"
+const deploy = false;
+const server = deploy? "" : "http://localhost:8000";
 export default server;
