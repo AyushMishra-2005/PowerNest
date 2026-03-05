@@ -4,7 +4,18 @@ import "./mqtt/mqttClient.js"
 import { turnOffRelay } from "./services/relay.service.js";
 
 const app = express();
-app.use(cors());
+const allowedOrigins = ["http://localhost:8000", "https://powernest-backend-ftk0.onrender.com"];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+}));
+
 app.use(express.json());
 
 const PORT = 9000;

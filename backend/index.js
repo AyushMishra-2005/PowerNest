@@ -20,7 +20,7 @@ app.use(cookieParser());
 const PORT = process.env.PORT || 8000;
 const DB_URL = process.env.DB_URL;
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:9000"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:9000", "https://powernest-espserver.onrender.com"];
 
 app.use(cors({
   origin: (origin, callback) => {
