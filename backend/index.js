@@ -10,6 +10,7 @@ import espRoute from './routes/esp.route.js'
 import { app, io, server } from './SocketIO/server.js'
 import espServerRoute from './routes/espServer.route.js'
 import redis from './config/redis.js';
+import { getTransporter } from './config/nodemailer.config.js';
 
 dotenv.config();
 app.use(express.json());
@@ -81,6 +82,25 @@ app.get('/health', (req, res) => {
     service: "backend",
     timestamp: new Date().toISOString()
   });
+});
+
+app.get("/test-mail", async (req,res)=>{
+  try{
+    const transporter = getTransporter();
+
+    await transporter.sendMail({
+      from: process.env.SENDER_EMAIL,
+      to: "ayushmishra9449@gmail.com",
+      subject: "PowerNest Test",
+      text: "Email working"
+    });
+    console.log(process.env.SENDER_EMAIL);
+
+    res.send("Email sent");
+  }catch(err){
+    console.error(err);
+    res.send(err.message);
+  }
 });
 
 
