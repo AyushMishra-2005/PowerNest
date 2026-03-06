@@ -1,10 +1,8 @@
 import User from '../models/user.model.js'
 import bcrypt from 'bcrypt'
 import createTokenAndSaveCookie from '../jwt/generateToken.js'
-import { getTransporter } from '../config/nodemailer.config.js';
 import StoreOTP from '../models/otp.model.js'
-
-const transporter = getTransporter();
+import { emailApi } from '../config/brevo.config.js'
 
 export const signup = async (req, res) => {
   try {
@@ -48,33 +46,90 @@ export const signup = async (req, res) => {
       console.log("User saved successfully!");
     });
 
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: email,
+    await emailApi.sendTransacEmail({
+      sender: {
+        email: process.env.SENDER_EMAIL,
+        name: "PowerNest"
+      },
+      to: [
+        {
+          email: email
+        }
+      ],
       subject: "Welcome to PowerNest",
-      text: `Hi ${name},
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+          
+          <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            
+            <!-- Header -->
+            <div style="background-color: #0f172a; padding: 20px; text-align: center;">
+              <h2 style="color: #22c55e; margin: 0;">Welcome to PowerNest</h2>
+            </div>
 
-      Welcome to PowerNest — we’re excited to have you on board!
+            <!-- Body -->
+            <div style="padding: 25px; color: #111827; font-size: 14px; line-height: 1.6;">
+              
+              <p>Hi <strong style="color:#22c55e;">${name}</strong>,</p>
 
-      PowerNest is built to help you monitor, control, and optimize power usage intelligently using smart automation and real-time insights. Whether you’re managing rooms, analyzing energy data, or building smarter systems, PowerNest is here to support you every step of the way.
+              <p>
+              Welcome to <strong>PowerNest</strong> — we’re excited to have you on board!
+              </p>
 
-      Here’s how you can get started:
-      ⚡ Explore your dashboard to view and control connected rooms and devices.
+              <p>
+              PowerNest helps you monitor, control, and optimize power usage intelligently using smart automation and real-time insights.
+              </p>
 
-      🏠 Set up your spaces to enable smart power automation.
+              <div style="background:#f9fafb; padding:15px; border-left:4px solid #22c55e; border-radius:4px;">
+                <p style="margin:5px 0;">
+                  ⚡ Explore your dashboard to manage rooms and devices.<br/>
+                  🏠 Set up spaces for smart power automation.<br/>
+                  📊 Track energy usage and improve efficiency.
+                </p>
+              </div>
 
-      📊 Track energy usage and gain insights to improve efficiency.
+              <!-- Dashboard Button -->
+              <div style="text-align:center; margin-top:25px;">
+                <a href="https://powernest-self.vercel.app"
+                  style="display:inline-block;
+                        padding:12px 24px;
+                        background:#22c55e;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:6px;
+                        font-weight:bold;
+                        font-size:14px;">
+                  Open PowerNest Dashboard
+                </a>
+              </div>
 
-      If you have any questions or need assistance, feel free to reply to this email or reach out to our support team — we’re always happy to help.
+              <p style="margin-top:25px;">
+              If you have any questions or need assistance, feel free to contact our support team anytime.
+              </p>
 
-      Thanks for joining PowerNest. Let’s build a smarter and more efficient future together!
+              <p>
+              Thanks for joining <span style="color:#22c55e; font-weight:bold;">PowerNest</span>.  
+              Let’s build a smarter and more efficient future together!
+              </p>
 
-      Warm regards,  
-      The PowerNest Team  
-      www.powernest.io | support@powernest.io`
-    }
+              <p style="margin-top:20px;">
+              Warm regards,<br/>
+              <strong>PowerNest Team</strong>
+              </p>
 
-    await transporter.sendMail(mailOptions);
+            </div>
+
+            <!-- Footer -->
+            <div style="background:#111827; color:#ffffff; text-align:center; padding:15px; font-size:12px;">
+              © 2026 PowerNest | Smart Energy Automation<br/>
+              <span style="color:#9ca3af;">www.powernest.io</span>
+            </div>
+
+          </div>
+
+        </div>
+        `
+    });
 
     if (newUser) {
       createTokenAndSaveCookie(newUser._id, res);
@@ -165,13 +220,6 @@ export const sendOtp = async (req, res) => {
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
 
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: "AIspire Accout verification OTP",
-      text: `Your OTP is ${otp}. Verify your email ID using this OTP. It is valid for 24 hours.`
-    }
-
     const otpData = new StoreOTP({
       email,
       verifyOtp: otp,
@@ -180,7 +228,19 @@ export const sendOtp = async (req, res) => {
 
     await otpData.save();
 
-    await transporter.sendMail(mailOptions);
+    await emailApi.sendTransacEmail({
+      sender: {
+        email: process.env.SENDER_EMAIL,
+        name: "PowerNest"
+      },
+      to: [
+        {
+          email: email
+        }
+      ],
+      subject: "PowerNest Account Verification OTP",
+      textContent: `Your OTP is ${otp}. Verify your email ID using this OTP. It is valid for 24 hours.`
+    });
 
     return res.status(200).json({ message: "OTP send successful" });
 

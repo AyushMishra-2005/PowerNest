@@ -2,10 +2,8 @@ import Block from "../models/block.model.js";
 import EspData from "../models/espData.model.js";
 import { io, getUserSocketId } from "../SocketIO/server.js";
 import redis from '../config/redis.js'
-import { getTransporter } from "../config/nodemailer.config.js";
 import User from "../models/user.model.js";
-
-const transporter = getTransporter();
+import { emailApi } from '../config/brevo.config.js'
 
 export const findRoomEspId = async (req, res) => {
   const { sensorEspId, pin, payload } = req.body;
@@ -109,11 +107,18 @@ export const findRoomEspId = async (req, res) => {
       } else {
         io.to(userSocketId).emit("stopped", message);
         if (connectionMode !== "auto") {
-          const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: email,
+          await emailApi.sendTransacEmail({
+            sender: {
+              email: process.env.SENDER_EMAIL,
+              name: "PowerNest"
+            },
+            to: [
+              {
+                email: email
+              }
+            ],
             subject: "PowerNest Alert: Room Inactive",
-            html: `
+            htmlContent: `
               <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
                 
                 <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
@@ -128,7 +133,7 @@ export const findRoomEspId = async (req, res) => {
                     
                     <p>Hi <strong style="color:#22c55e;">${userName}</strong>,</p>
 
-                    <p>The room appears to be unoccupied at the moment.</p>
+                    <p>The room appears to be <strong>unoccupied</strong> at the moment.</p>
 
                     <div style="background:#f9fafb; padding:15px; border-left:4px solid #22c55e; border-radius:4px;">
                       <p style="margin:5px 0;">
@@ -142,8 +147,24 @@ export const findRoomEspId = async (req, res) => {
                       You may turn off the power to save energy and optimize usage.
                     </p>
 
-                    <p>
-                      Manage it directly from your <span style="color:#22c55e; font-weight:bold;">PowerNest Dashboard</span>.
+                    <!-- Dashboard Button -->
+                    <div style="text-align:center; margin-top:25px;">
+                      <a href="https://powernest-self.vercel.app"
+                        style="display:inline-block;
+                              padding:12px 24px;
+                              background:#22c55e;
+                              color:#ffffff;
+                              text-decoration:none;
+                              border-radius:6px;
+                              font-weight:bold;
+                              font-size:14px;">
+                        Open PowerNest Dashboard
+                      </a>
+                    </div>
+
+                    <p style="margin-top:25px;">
+                      Manage it directly from your 
+                      <span style="color:#22c55e; font-weight:bold;">PowerNest Dashboard</span>.
                     </p>
 
                   </div>
@@ -154,11 +175,10 @@ export const findRoomEspId = async (req, res) => {
                   </div>
 
                 </div>
-              </div>
-            `
-          };
 
-          await transporter.sendMail(mailOptions);
+              </div>
+              `
+          });
         }
       }
     }
