@@ -47,6 +47,19 @@ PowerNest is a smart energy management system designed for campuses, hostels, an
 
 Frontend (Next.js) → Backend (Express + MongoDB + Redis) → ESP Server (MQTT) → ESP32 Devices
 
+## 🔄 Control Flow (Manual + Auto Modes)
+
+<picture>
+  <!-- Dark mode -->
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/powernest-dark.png">
+  
+  <!-- Light mode -->
+  <source media="(prefers-color-scheme: light)" srcset="./assets/powernest-light.png">
+  
+  <!-- Fallback -->
+  <img alt="PowerNest Flowchart" src="./assets/powernest-dark.png">
+</picture>
+
 ---
 
 ## 🔌 Hardware Diagrams
