@@ -4,6 +4,7 @@ import { io, getUserSocketId } from "../SocketIO/server.js";
 import redis from '../config/redis.js'
 import User from "../models/user.model.js";
 import { emailApi } from '../config/brevo.config.js'
+import {generateSecurityVoice} from '../services/tts.service.js'
 
 export const findRoomEspId = async (req, res) => {
   const { sensorEspId, pin, payload } = req.body;
@@ -104,8 +105,83 @@ export const findRoomEspId = async (req, res) => {
     if (userSocketId) {
       if (payload === "active") {
         io.to(userSocketId).emit("active", message);
-      } else {
+    
+        if (connection.isSecure) {
+
+          const alertText = `Attention! Unauthorized access detected at Room ${roomNumber} in the ${blockName}.`;
+
+          const audioBase64 = await generateSecurityVoice(alertText);
+
+          if (audioBase64 && userSocketId) {
+            io.to(userSocketId).emit("security_alert_voice", {
+              audio: audioBase64,
+              text: alertText
+            });
+          }
+
+          await emailApi.sendTransacEmail({
+            sender: {
+              email: process.env.SENDER_EMAIL,
+              name: "PowerNest 🚨"
+            },
+            to: [{ email }],
+            subject: "🚨 PowerNest Security Alert: Unauthorized Access Detected",
+            htmlContent: `
+              <div style="font-family: Arial; background:#fff5f5; padding:20px;">
+                
+                <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #fecaca;">
+                  
+                  <div style="background:#dc2626;padding:20px;text-align:center;">
+                    <h2 style="color:#ffffff;margin:0;">🚨 SECURITY ALERT 🚨</h2>
+                  </div>
+
+                  <div style="padding:25px;color:#111827;">
+                    
+                    <p>Hi <strong>${userName}</strong>,</p>
+
+                    <p style="color:#dc2626;font-weight:bold;">
+                      ⚠️ Unauthorized access attempt detected!
+                    </p>
+
+                    <div style="background:#fff1f2;padding:15px;border-left:5px solid #dc2626;border-radius:4px;">
+                      <p style="margin:5px 0;">
+                        🏢 Block: <strong>${blockName}</strong><br/>
+                        🚪 Room: <strong>${roomNumber}</strong><br/>
+                        🆔 Room ID: <strong>${roomId}</strong>
+                      </p>
+                    </div>
+
+                    <p style="margin-top:20px;">
+                      Please take immediate action if this activity is not authorized.
+                    </p>
+
+                    <div style="text-align:center;margin-top:25px;">
+                      <a href="https://powernest-self.vercel.app"
+                        style="padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">
+                        View Dashboard
+                      </a>
+                    </div>
+
+                  </div>
+
+                  <div style="background:#111827;color:#ffffff;text-align:center;padding:15px;font-size:12px;">
+                    © 2026 PowerNest | Security Monitoring System
+                  </div>
+
+                </div>
+              </div>
+            `
+          });
+        }
+
+      }else if(payload === "heartbeat"){
+
+        io.to(userSocketId).emit("active", message);
+
+      } 
+      else {
         io.to(userSocketId).emit("stopped", message);
+
         if (connectionMode !== "auto") {
           await emailApi.sendTransacEmail({
             sender: {
