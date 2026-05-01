@@ -51,7 +51,7 @@ export function ESPConnectionPage({ blockId }) {
   const [connectionPowerStates, setConnectionPowerStates] = useState({});
 
   const [displayStatuses, setDisplayStatuses] = useState({});
-  
+
 
   useEffect(() => {
     connectionRef.current = connections;
@@ -80,7 +80,8 @@ export function ESPConnectionPage({ blockId }) {
               status: pin.status,
               roomNumber: pin.roomNumber,
               isBlocked: pin.isBlocked,
-              mode: pin.mode
+              mode: pin.mode,
+              isSecure: pin.isSecure,
             };
           });
 
@@ -205,6 +206,7 @@ export function ESPConnectionPage({ blockId }) {
               status: pin.status,
               roomNumber: pin.roomNumber,
               isBlocked: pin.isBlocked,
+              isSecure: pin.isSecure,
             };
           });
 
@@ -256,6 +258,7 @@ export function ESPConnectionPage({ blockId }) {
               roomNumber: pin.roomNumber,
               isBlocked: pin.isBlocked,
               mode: pin.mode,
+              isSecure: pin.isSecure,
             };
           });
 
@@ -301,6 +304,7 @@ export function ESPConnectionPage({ blockId }) {
             roomNumber: pin.roomNumber,
             isBlocked: pin.isBlocked,
             mode: pin.mode,
+            isSecure: pin.isSecure,
           };
         });
 
@@ -367,6 +371,45 @@ export function ESPConnectionPage({ blockId }) {
 
 
   }
+
+  const toggleSecurity = async (connectionId, currentStatus) => {
+    try {
+      const { data } = await axios.post(
+        `${server}/esp/toggle-security`,
+        {
+          blockId,
+          connectionId,
+          isSecure: !currentStatus
+        },
+        { withCredentials: true }
+      );
+
+      toast.success(data.message);
+
+      if (data.data) {
+        const updatedConnections = data.data.connectedPins.map((pin) => ({
+          id: pin._id,
+          sensorPin: `D${pin.sensorEspPin}`,
+          roomPin: `D${pin.roomEspPin}`,
+          status: pin.status,
+          roomNumber: pin.roomNumber,
+          isBlocked: pin.isBlocked,
+          isSecure: pin.isSecure,
+          mode: pin.mode
+        }));
+
+        setConnections(updatedConnections);
+      }
+
+    } catch (err) {
+      console.log(err);
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to toggle security";
+      toast.error(message);
+    }
+  };
 
   const togglePowerState = async (connectionId, roomPin) => {
     roomPin = Number(roomPin.slice(1));
@@ -828,6 +871,21 @@ export function ESPConnectionPage({ blockId }) {
                                 className={`${connectionModes[connection.id] === "auto"
                                   ? "data-[state=unchecked]:bg-purple-500"
                                   : "data-[state=checked]:bg-orange-500"
+                                  } cursor-pointer transition-colors duration-200`}
+                              />
+                            </div>
+
+                            {/* Security Toggle Switch */}
+                            <div className="flex items-center space-x-2 bg-white/50 dark:bg-gray-800/30 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border border-emerald-100 dark:border-emerald-800/50">
+                              <span className="text-xs text-gray-600 dark:text-gray-400">
+                                {connection.isSecure ? "Secured" : "Unsecured"}
+                              </span>
+                              <Switch
+                                checked={connection.isSecure}
+                                onCheckedChange={() => toggleSecurity(connection.id, connection.isSecure)}
+                                className={`${connection.isSecure
+                                  ? "data-[state=checked]:bg-green-500"
+                                  : "data-[state=unchecked]:bg-gray-400"
                                   } cursor-pointer transition-colors duration-200`}
                               />
                             </div>

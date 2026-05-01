@@ -34,6 +34,11 @@ const espDataSchema = new Schema(
             required: true,
             default: false,
           },
+          isSecure: {
+            type: Boolean,
+            required: true,
+            default: false,
+          },
           roomNumber: {
             type: String,
             required: true,
