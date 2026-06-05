@@ -2,7 +2,10 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-#define ESP_ID "ESP_RELAY_ROOM_101"
+#define ESP_ID "ESP_RELAY_ROOM"
+
+#define RELAY_ON HIGH
+#define RELAY_OFF LOW
 
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
@@ -20,17 +23,56 @@ int relayPins[] = {
 
 int pinCount = sizeof(relayPins) / sizeof(relayPins[0]);
 
-
 unsigned long lastActiveTime[40];
 bool manualHold[40];
+bool activePinsState[40];
+bool lastSentState[40];
+
 const unsigned long RELAY_TIMEOUT = 4000;
-
-bool activePinsState[40];      
-bool lastSentState[40];        
-
 unsigned long lastStatusSend = 0;
 const unsigned long STATUS_INTERVAL = 4000;
 
+void connectWiFi() {
+  Serial.println("\nConnecting to WiFi...");
+  WiFi.begin(ssid, password);
+
+  int retry = 0;
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    retry++;
+
+    if (retry > 40) {
+      Serial.println("\nWiFi Failed! Restarting...");
+      ESP.restart();
+    }
+  }
+
+  Serial.println("\nWiFi Connected");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void connectMQTT() {
+  while (!client.connected()) {
+
+    Serial.print("Connecting to MQTT... ");
+
+    if (client.connect(ESP_ID)) {
+      Serial.println("Connected");
+
+      client.subscribe("powernest/ESP_RELAY_ROOM/relay/+");
+      Serial.println("Subscribed to relay topics");
+    }
+    else {
+      Serial.print("Failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" retrying in 2 sec...");
+      delay(2000);
+    }
+  }
+}
 
 void sendActivePins() {
 
@@ -39,18 +81,30 @@ void sendActivePins() {
 
   JsonArray arr = doc.createNestedArray("activePins");
 
+  Serial.print("Active Pins: [");
+
+  bool first = true;
+
   for (int i = 0; i < pinCount; i++) {
     int pin = relayPins[i];
+
     if (activePinsState[pin]) {
+
       arr.add(pin);
+
+      if (!first) Serial.print(", ");
+      Serial.print(pin);
+
+      first = false;
     }
   }
+
+  Serial.println("]");
 
   char buffer[256];
   serializeJson(doc, buffer);
 
-  client.publish("powernest/status/ESP_RELAY_ROOM_101", buffer);
-  Serial.println("Status sent to server");
+  client.publish("powernest/status/ESP_RELAY_ROOM", buffer);
 }
 
 void copyCurrentToLast() {
@@ -90,55 +144,33 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 
   if (!validPin) {
-    Serial.println("Invalid Pin Received!");
-    return;  
+    Serial.println("Invalid Pin Received");
+    return;
   }
 
   if (msg == "ON") {
-    digitalWrite(pin, HIGH);
+    digitalWrite(pin, RELAY_ON);
     manualHold[pin] = false;
     lastActiveTime[pin] = millis();
-    activePinsState[pin] = true;   
-    Serial.println("Relay PIN " + String(pin) + " -> ON (AUTO)");
+    activePinsState[pin] = true;
   }
 
   else if (msg == "ON_MANUAL") {
-    digitalWrite(pin, HIGH);
+    digitalWrite(pin, RELAY_ON);
     manualHold[pin] = true;
-    activePinsState[pin] = true;   
-    Serial.println("Relay PIN " + String(pin) + " -> ON (MANUAL)");
+    activePinsState[pin] = true;
   }
 
   else if (msg == "OFF") {
-    digitalWrite(pin, LOW);
-    manualHold[pin] = false;
-    activePinsState[pin] = false;  
-    Serial.println("Relay PIN " + String(pin) + " -> OFF");
-  }
-
-  else if(msg == "MANUAL_OFF"){
-    digitalWrite(pin, LOW);
+    digitalWrite(pin, RELAY_OFF);
     manualHold[pin] = false;
     activePinsState[pin] = false;
-    Serial.println("Relay PIN " + String(pin) + " -> OFF (MANUAL)");
   }
-}
 
-
-void connectWiFi() {
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-  }
-}
-
-void connectMQTT() {
-  while (!client.connected()) {
-    if (client.connect(ESP_ID)) {
-      client.subscribe("powernest/ESP_RELAY_ROOM_101/relay/+");
-    } else {
-      delay(2000);
-    }
+  else if (msg == "MANUAL_OFF") {
+    digitalWrite(pin, RELAY_OFF);
+    manualHold[pin] = false;
+    activePinsState[pin] = false;
   }
 }
 
@@ -146,12 +178,16 @@ void connectMQTT() {
 void setup() {
 
   Serial.begin(115200);
+  delay(1000);
+
+  Serial.println("\nStarting ESP Relay Controller...");
 
   for (int i = 0; i < pinCount; i++) {
+
     int pin = relayPins[i];
 
     pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
+    digitalWrite(pin, RELAY_OFF);
 
     lastActiveTime[pin] = 0;
     manualHold[pin] = false;
@@ -160,38 +196,41 @@ void setup() {
   }
 
   connectWiFi();
+
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+
   connectMQTT();
 
-  Serial.println("RELAY ESP READY: " ESP_ID);
+  Serial.println("SYSTEM READY: " ESP_ID);
 }
 
 
 void loop() {
 
   if (!client.connected()) connectMQTT();
+
   client.loop();
 
   unsigned long now = millis();
 
   for (int i = 0; i < pinCount; i++) {
+
     int pin = relayPins[i];
 
     if (!manualHold[pin] &&
-        digitalRead(pin) == HIGH &&
+        digitalRead(pin) == RELAY_ON &&
         now - lastActiveTime[pin] > RELAY_TIMEOUT) {
 
-      digitalWrite(pin, LOW);
-      activePinsState[pin] = false;   
-      Serial.println("Relay PIN " + String(pin) + " -> AUTO OFF");
+      digitalWrite(pin, RELAY_OFF);
+      activePinsState[pin] = false;
     }
   }
 
   if (hasChanged()) {
-    lastStatusSend = now;
     sendActivePins();
     copyCurrentToLast();
+    lastStatusSend = now;
   }
 
   if (now - lastStatusSend > STATUS_INTERVAL) {

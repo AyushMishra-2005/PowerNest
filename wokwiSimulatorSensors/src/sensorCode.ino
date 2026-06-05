@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-#define ESP_ID "ESP_PIR_ROOM_101"
+#define ESP_ID "ESP_PIR_ROOM"
 
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
@@ -11,7 +11,7 @@ const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-
+// PIR sensor pins
 int pirPins[] = {
   4, 5, 12, 13, 14,
   18, 19, 21, 22, 23,
@@ -24,7 +24,7 @@ int pirCount = sizeof(pirPins) / sizeof(pirPins[0]);
 int lastState[20];
 unsigned long lastSend[20];
 
-const unsigned long HEARTBEAT_INTERVAL = 2000; 
+const unsigned long HEARTBEAT_INTERVAL = 2000; // 2 seconds
 
 void connectWiFi() {
   WiFi.begin(ssid, password);
@@ -67,19 +67,22 @@ void loop() {
     String topic = "powernest/" + String(ESP_ID) +
                    "/pir/" + String(pirPins[i]);
 
+    // Motion just started
     if (currentState == HIGH && lastState[i] == LOW) {
       client.publish(topic.c_str(), "active");
       lastSend[i] = now;
       Serial.println(topic + " -> active");
     }
 
+    // Motion continues → heartbeat
     else if (currentState == HIGH &&
              now - lastSend[i] >= HEARTBEAT_INTERVAL) {
-      client.publish(topic.c_str(), "active");
+      client.publish(topic.c_str(), "heartbeat");
       lastSend[i] = now;
-      Serial.println(topic + " -> active");
+      Serial.println(topic + " -> active (heartbeat)");
     }
 
+    // Motion stopped
     else if (currentState == LOW && lastState[i] == HIGH) {
       client.publish(topic.c_str(), "stopped");
       Serial.println(topic + " -> stopped");

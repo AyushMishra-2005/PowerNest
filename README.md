@@ -16,8 +16,8 @@
 
 ### 🔬 Wokwi Simulations
 
-- **Relay Control Simulation (Room Automation):** https://wokwi.com/projects/457683788654445569  
-- **PIR Sensor Simulation (Motion Detection):** https://wokwi.com/projects/451049763231093761 
+- **Relay Control Simulation (Room Automation):** https://wokwi.com/projects/465962476798374913  
+- **PIR Sensor Simulation (Motion Detection):** https://wokwi.com/projects/451049763231093761
 
 ---
 
