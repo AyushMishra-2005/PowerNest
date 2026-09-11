@@ -25,6 +25,13 @@
       "top": 128.8,
       "left": -103.38,
       "attrs": {}
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "pir4",
+      "top": 128.8,
+      "left": -391.38,
+      "attrs": {}
     }
   ],
   "connections": [
@@ -40,7 +47,10 @@
     [ "pir3:VCC", "bb1:bp.3", "red", [ "v0" ] ],
     [ "pir3:OUT", "esp:5", "green", [ "v0" ] ],
     [ "pir2:OUT", "esp:12", "green", [ "v0" ] ],
-    [ "pir1:OUT", "esp:33", "green", [ "v0" ] ]
+    [ "pir1:OUT", "esp:33", "green", [ "v0" ] ],
+    [ "pir4:VCC", "bb1:bp.4", "red", [ "v0" ] ],
+    [ "pir4:GND", "bb1:bn.4", "black", [ "v67.2", "h402.94" ] ],
+    [ "pir4:OUT", "esp:13", "green", [ "v0" ] ]
   ],
   "dependencies": {}
 }

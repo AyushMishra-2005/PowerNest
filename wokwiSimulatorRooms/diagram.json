@@ -37,7 +37,16 @@
     },
     { "type": "wokwi-relay-module", "id": "relay1", "top": -124.6, "left": -48, "attrs": {} },
     { "type": "wokwi-relay-module", "id": "relay2", "top": 67.4, "left": -48, "attrs": {} },
-    { "type": "wokwi-relay-module", "id": "relay3", "top": 269, "left": -48, "attrs": {} }
+    { "type": "wokwi-relay-module", "id": "relay3", "top": 269, "left": -48, "attrs": {} },
+    { "type": "wokwi-relay-module", "id": "relay4", "top": 441.8, "left": -48, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led7",
+      "top": 361.2,
+      "left": -15.4,
+      "attrs": { "color": "red" }
+    },
+    { "type": "wokwi-led", "id": "led8", "top": 361.2, "left": 23, "attrs": { "color": "white" } }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -69,7 +78,20 @@
     [ "led4:C", "led3:C", "black", [ "v0" ] ],
     [ "led4:C", "led2:C", "black", [ "v0", "h86.8", "v201.6" ] ],
     [ "led2:C", "led1:C", "black", [ "v0" ] ],
-    [ "led6:C", "bb1:tn.3", "black", [ "v0", "h221.2" ] ]
+    [ "led6:C", "bb1:tn.3", "black", [ "v0", "h221.2" ] ],
+    [ "relay3:COM", "relay4:COM", "red", [ "h30", "v171.4" ] ],
+    [ "led7:A", "led8:A", "red", [ "v9.6", "h38.4" ] ],
+    [ "led8:A", "relay4:NO", "red", [ "v9.6", "h57.6", "v67.2" ] ],
+    [ "led7:C", "led8:C", "black", [ "v0" ] ],
+    [ "led8:C", "led2:C", "black", [ "v0", "h86.8", "v-172.8" ] ],
+    [ "relay3:VCC", "relay4:VCC", "red", [ "h-28.8", "v163.2" ] ],
+    [ "relay3:GND", "relay4:GND", "black", [ "h-19.2", "v172.4", "h19.2" ] ],
+    [
+      "relay4:IN",
+      "esp:21",
+      "green",
+      [ "h-9.6", "v-57.8", "h278.4", "v-144", "h249.6", "v-163.2" ]
+    ]
   ],
   "dependencies": {}
 }
