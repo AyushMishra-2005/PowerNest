@@ -4,7 +4,6 @@ import React, { useState } from "react"
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar"
 import {
   IconArrowLeft,
-  IconBrandTabler,
   IconSettings,
   IconUserBolt,
 } from "@tabler/icons-react"
@@ -13,13 +12,14 @@ import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { useAuth } from "@/context/AuthProvider"
 import {
   Power,
-  LayoutDashboard ,
-  Zap 
+  LayoutDashboard,
+  Zap,
+  Sun,
 } from "lucide-react"
 
 export default function NavSidebar() {
   const [open, setOpen] = useState(false)
-  const { authUser } = useAuth();
+  const { authUser } = useAuth()
 
   const links = [
     {
@@ -34,6 +34,13 @@ export default function NavSidebar() {
       href: "/dashboard",
       icon: (
         <LayoutDashboard className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+      ),
+    },
+    {
+      label: "Solar",
+      href: "/solarManagement",
+      icon: (
+        <Sun className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
       ),
     },
     {
@@ -60,7 +67,10 @@ export default function NavSidebar() {
   ]
 
   const handleLinkClick = () => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+    if (
+      typeof window !== "undefined" &&
+      window.innerWidth < 768
+    ) {
       setOpen(false)
     }
   }
@@ -68,11 +78,20 @@ export default function NavSidebar() {
   return (
     <Sidebar open={open} setOpen={setOpen}>
       <SidebarBody className="justify-between gap-10">
+
+        {/* TOP */}
         <div className="flex flex-col gap-2">
-          <div className={`hidden md:block ${!open ? "m-2 ml-1 mb-0" : "mt-2"}`}>
+
+          {/* LOGO */}
+          <div
+            className={`hidden md:block ${
+              !open ? "m-2 ml-1 mb-0" : "mt-2"
+            }`}
+          >
             {open ? <Logo /> : <LogoIcon />}
           </div>
 
+          {/* NAVIGATION */}
           <div className="mt-8 flex flex-col gap-2">
             {links.map((link, idx) => (
               <SidebarLink
@@ -84,13 +103,17 @@ export default function NavSidebar() {
           </div>
         </div>
 
+        {/* BOTTOM */}
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-center px-2 cursor-pointer">
+
+          {/* THEME TOGGLER */}
+          <div className="flex cursor-pointer items-center justify-center px-2">
             <AnimatedThemeToggler />
           </div>
 
-          {
-            authUser?.user && <SidebarLink
+          {/* USER */}
+          {authUser?.user && (
+            <SidebarLink
               link={{
                 label: `${authUser?.user?.name}`,
                 href: "#",
@@ -114,31 +137,36 @@ export default function NavSidebar() {
               }}
               onClick={handleLinkClick}
             />
-          }
-
+          )}
         </div>
+
       </SidebarBody>
     </Sidebar>
   )
 }
 
+
 const Logo = () => (
   <div className="flex items-center gap-2 px-2">
-    <div className="h-8 w-8 min-w-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center">
+
+    <div className="flex h-8 w-8 min-w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500">
       <Power className="h-5 w-5 text-white" />
     </div>
+
     <motion.span
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="font-medium whitespace-pre text-emerald-900 dark:text-emerald-400"
+      className="whitespace-pre font-medium text-emerald-900 dark:text-emerald-400"
     >
       PowerNest
     </motion.span>
+
   </div>
 )
 
+
 const LogoIcon = () => (
-  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center">
+  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500">
     <Power className="h-5 w-5 text-white" />
   </div>
 )
