@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import axios from 'axios'
 import {
   Sun,
   Plus,
@@ -16,15 +17,7 @@ import {
   Save,
 } from "lucide-react"
 
-const STORAGE_KEY = "powernest_solar_systems"
-
-const defaultSolar = {
-  id: "esp32-01",
-  name: "Central Block Solar",
-  location: "Central Block",
-  description:
-    "Solar energy monitoring and battery management system for the Central Block.",
-}
+import server from '../../envirnoment.js'
 
 export default function SolarManagementPage() {
   const router = useRouter()
@@ -39,88 +32,128 @@ export default function SolarManagementPage() {
     description: "",
   })
 
-  useEffect(() => {
+  const fetchSolars = async () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const response = await axios.get(`${server}/solar-esp`, {
+        withCredentials: true,
+      });
 
-      if (stored) {
-        setSolars(JSON.parse(stored))
-      } else {
-        setSolars([defaultSolar])
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify([defaultSolar])
-        )
-      }
+      const data = response.data;
+      
+      const formattedSolars = data.solarESPs.map((solar) => ({
+        mongoId: solar._id,
+        id: solar.espId,
+        name: solar.solarName,
+        location: solar.buildingLocation,
+        description: solar.description,
+        active: solar.active,
+      }));
+
+      setSolars(formattedSolars);
+
     } catch (error) {
-      console.error("Failed to load solar systems:", error)
-      setSolars([defaultSolar])
+      console.error("Failed to fetch solar systems:", error);
     }
-  }, [])
+  };
 
   useEffect(() => {
-    if (solars.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(solars))
-    }
-  }, [solars])
+    fetchSolars();
+  }, []);
 
-  const handleAddSolar = (e) => {
-    e.preventDefault()
+  const handleAddSolar = async (e) => {
+    e.preventDefault();
 
     if (
       !formData.name.trim() ||
       !formData.espId.trim() ||
       !formData.location.trim()
     ) {
-      return
+      alert("Please fill all required fields.");
+      return;
     }
 
-    const exists = solars.some(
-      (solar) =>
-        solar.id.toLowerCase() === formData.espId.trim().toLowerCase()
-    )
+    try {
+      const response = await axios.post(
+        `${server}/solar-esp/add`,
+        {
+          solarName: formData.name.trim(),
+          espId: formData.espId.trim(),
+          buildingLocation: formData.location.trim(),
+          description: formData.description.trim(),
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
-    if (exists) {
-      alert("A solar system with this ESP ID already exists.")
-      return
+      const data = response.data;
+
+      const solar = data.solarESP;
+
+      const newSolar = {
+        mongoId: solar._id,
+        id: solar.espId,
+        name: solar.solarName,
+        location: solar.buildingLocation,
+        description: solar.description,
+        active: solar.active,
+      };
+
+      setSolars((prev) => [...prev, newSolar]);
+
+      setFormData({
+        name: "",
+        espId: "",
+        location: "",
+        description: "",
+      });
+
+      setShowAddForm(false);
+
+    } catch (error) {
+      console.error(
+        "Add solar error:",
+        error.response?.data?.message || error.message
+      );
+
+      alert(
+        error.response?.data?.message || "Failed to add solar system"
+      );
     }
+  };
 
-    const newSolar = {
-      id: formData.espId.trim(),
-      name: formData.name.trim(),
-      location: formData.location.trim(),
-      description:
-        formData.description.trim() ||
-        "Solar energy monitoring system for PowerNest.",
-    }
-
-    setSolars((prev) => [...prev, newSolar])
-
-    setFormData({
-      name: "",
-      espId: "",
-      location: "",
-      description: "",
-    })
-
-    setShowAddForm(false)
-  }
-
-  const handleDelete = (id) => {
+  const handleDelete = async (mongoId) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to remove this solar system?"
-    )
+    );
 
-    if (!confirmDelete) return
+    if (!confirmDelete) return;
 
-    setSolars((prev) => {
-      const updated = prev.filter((solar) => solar.id !== id)
+    try {
+      const response = await fetch(
+        `${server}/solar-esp/delete/${mongoId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      const data = await response.json();
 
-      return updated
-    })
-  }
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete solar system");
+      }
+
+      setSolars((prev) =>
+        prev.filter((solar) => solar.mongoId !== mongoId)
+      );
+
+    } catch (error) {
+      console.error("Delete solar error:", error);
+
+      alert(error.message || "Failed to delete solar system");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
@@ -296,7 +329,7 @@ export default function SolarManagementPage() {
                     </button>
 
                     <button
-                      onClick={() => handleDelete(solar.id)}
+                      onClick={() => handleDelete(solar.mongoId)}
                       className="px-3 py-2.5 rounded-md border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 cursor-pointer"
                       title="Remove Solar"
                     >

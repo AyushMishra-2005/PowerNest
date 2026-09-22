@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import axios from "axios"
+import server from "../../../envirnoment.js"
 import {
   ArrowLeft,
   Activity,
@@ -42,34 +44,34 @@ import {
 const initialData = {
   espId: "esp32-01",
   timestamp: 0,
-  sunlight: 20,
-  solarVoltage: 4.01,
-  solarCurrent: 2,
-  solarPower: 8.04,
+  sunlight: 0,
+  solarVoltage: 0,
+  solarCurrent: 0,
+  solarPower: 0,
   requestedLoad: 0,
   essentialLoad: 0,
   nonEssentialLoad: 0,
   actualLoad: 0,
-  netPower: 8.04,
-  excessSolarPower: 8.04,
+  netPower: 0,
+  excessSolarPower: 0,
   powerDeficit: 0,
-  powerCondition: "SOLAR > LOAD",
-  supplyMode: "NO LOAD",
-  battery: 0.1,
-  batteryEnergy: 0.06,
-  batteryVoltage: 11,
-  batteryPower: 6.83,
-  batteryState: "CHARGING",
+  powerCondition: "WAITING",
+  supplyMode: "WAITING",
+  battery: 0,
+  batteryEnergy: 0,
+  batteryVoltage: 0,
+  batteryPower: 0,
+  batteryState: "WAITING",
   batteryUsed: false,
-  batteryCharging: true,
+  batteryCharging: false,
   batteryIdle: false,
-  batteryCritical: true,
+  batteryCritical: false,
   batteryFull: false,
   essentialActive: false,
   nonEssentialActive: false,
   energySaveActive: false,
-  status: "CHARGING",
-  event: "PERIODIC",
+  status: "WAITING",
+  event: "WAITING",
 }
 
 export default function SolarDetailsPage() {
@@ -84,332 +86,6 @@ export default function SolarDetailsPage() {
     ...initialData,
     espId,
   })
-  console.log("working");
-  
-  const initialHistory = [
-    {
-      espId,
-      timestamp: Date.now() - 9000,
-      sunlight: 88.2,
-      solarVoltage: 18.74,
-      solarCurrent: 9.41,
-      solarPower: 176.42,
-      requestedLoad: 41.28,
-      essentialLoad: 30,
-      nonEssentialLoad: 11.28,
-      actualLoad: 41.28,
-      netPower: 135.14,
-      excessSolarPower: 135.14,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 10.8,
-      batteryEnergy: 10.8,
-      batteryVoltage: 11.25,
-      batteryPower: 114.87,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 8000,
-      sunlight: 90.7,
-      solarVoltage: 19.02,
-      solarCurrent: 9.54,
-      solarPower: 181.36,
-      requestedLoad: 42.14,
-      essentialLoad: 30,
-      nonEssentialLoad: 12.14,
-      actualLoad: 42.14,
-      netPower: 139.22,
-      excessSolarPower: 139.22,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 10.9,
-      batteryEnergy: 10.9,
-      batteryVoltage: 11.27,
-      batteryPower: 118.34,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 7000,
-      sunlight: 92.9,
-      solarVoltage: 19.26,
-      solarCurrent: 9.64,
-      solarPower: 185.72,
-      requestedLoad: 43.06,
-      essentialLoad: 30,
-      nonEssentialLoad: 13.06,
-      actualLoad: 43.06,
-      netPower: 142.66,
-      excessSolarPower: 142.66,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.0,
-      batteryEnergy: 11.0,
-      batteryVoltage: 11.29,
-      batteryPower: 121.26,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 6000,
-      sunlight: 95.1,
-      solarVoltage: 19.48,
-      solarCurrent: 9.76,
-      solarPower: 190.18,
-      requestedLoad: 43.84,
-      essentialLoad: 30,
-      nonEssentialLoad: 13.84,
-      actualLoad: 43.84,
-      netPower: 146.34,
-      excessSolarPower: 146.34,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.1,
-      batteryEnergy: 11.1,
-      batteryVoltage: 11.31,
-      batteryPower: 124.39,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 5000,
-      sunlight: 96.9,
-      solarVoltage: 19.64,
-      solarCurrent: 9.87,
-      solarPower: 193.84,
-      requestedLoad: 44.22,
-      essentialLoad: 30,
-      nonEssentialLoad: 14.22,
-      actualLoad: 44.22,
-      netPower: 149.62,
-      excessSolarPower: 149.62,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.2,
-      batteryEnergy: 11.2,
-      batteryVoltage: 11.33,
-      batteryPower: 127.18,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 4000,
-      sunlight: 98.1,
-      solarVoltage: 19.76,
-      solarCurrent: 9.93,
-      solarPower: 196.26,
-      requestedLoad: 44.58,
-      essentialLoad: 30,
-      nonEssentialLoad: 14.58,
-      actualLoad: 44.58,
-      netPower: 151.68,
-      excessSolarPower: 151.68,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.3,
-      batteryEnergy: 11.3,
-      batteryVoltage: 11.35,
-      batteryPower: 128.93,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 3000,
-      sunlight: 98.7,
-      solarVoltage: 19.82,
-      solarCurrent: 9.95,
-      solarPower: 197.42,
-      requestedLoad: 44.76,
-      essentialLoad: 30,
-      nonEssentialLoad: 14.76,
-      actualLoad: 44.76,
-      netPower: 152.66,
-      excessSolarPower: 152.66,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.4,
-      batteryEnergy: 11.4,
-      batteryVoltage: 11.37,
-      batteryPower: 129.76,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 2000,
-      sunlight: 99.0,
-      solarVoltage: 19.88,
-      solarCurrent: 9.96,
-      solarPower: 198.04,
-      requestedLoad: 44.92,
-      essentialLoad: 30,
-      nonEssentialLoad: 14.92,
-      actualLoad: 44.92,
-      netPower: 153.12,
-      excessSolarPower: 153.12,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.5,
-      batteryEnergy: 11.5,
-      batteryVoltage: 11.39,
-      batteryPower: 130.15,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now() - 1000,
-      sunlight: 99.2,
-      solarVoltage: 19.90,
-      solarCurrent: 9.96,
-      solarPower: 198.28,
-      requestedLoad: 44.68,
-      essentialLoad: 30,
-      nonEssentialLoad: 14.68,
-      actualLoad: 44.68,
-      netPower: 153.60,
-      excessSolarPower: 153.60,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 11.6,
-      batteryEnergy: 11.6,
-      batteryVoltage: 11.40,
-      batteryPower: 130.56,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-    {
-      espId,
-      timestamp: Date.now(),
-      sunlight: 99.6,
-      solarVoltage: 19.92,
-      solarCurrent: 9.96,
-      solarPower: 198.44,
-      requestedLoad: 44.74,
-      essentialLoad: 30,
-      nonEssentialLoad: 14.74,
-      actualLoad: 44.74,
-      netPower: 153.70,
-      excessSolarPower: 153.70,
-      powerDeficit: 0,
-      powerCondition: "SOLAR > LOAD",
-      supplyMode: "SOLAR ONLY",
-      battery: 12.4,
-      batteryEnergy: 12.39,
-      batteryVoltage: 11.42,
-      batteryPower: 130.53,
-      batteryState: "CHARGING",
-      batteryUsed: false,
-      batteryCharging: true,
-      batteryIdle: false,
-      batteryCritical: true,
-      batteryFull: false,
-      essentialActive: true,
-      nonEssentialActive: true,
-      energySaveActive: false,
-      status: "CHARGING",
-      event: "PERIODIC",
-    },
-  ]
-
-  
   const formatHistoryTime = (timestamp) => {
     const value = Number(timestamp)
 
@@ -426,63 +102,48 @@ export default function SolarDetailsPage() {
     })
   }
 
-  const normalizedInitialHistory = initialHistory.map((item) => ({
-    ...item,
-    time: formatHistoryTime(item.timestamp),
-  }))
+  const formatTelemetry = (telemetry) => {
+    const timestamp = telemetry.createdAt
+      ? new Date(telemetry.createdAt).getTime()
+      : Date.now()
 
-  const [history, setHistory] = useState(normalizedInitialHistory)
-
-  const [connectionStatus, setConnectionStatus] =
-    useState("connecting")
-
-  const [lastUpdate, setLastUpdate] = useState(null)
-  const [secondsAgo, setSecondsAgo] = useState(0)
-
-  
-
-  const addHistoryPoint = (telemetry) => {
-    const telemetryTimestamp = Number(telemetry.timestamp)
-
-    const point = {
+    return {
       ...telemetry,
-      time: formatHistoryTime(telemetryTimestamp),
-
+      espId,
+      historyTimestamp: timestamp,
+      time: formatHistoryTime(timestamp),
       solarPower: Number(telemetry.solarPower || 0),
       requestedLoad: Number(telemetry.requestedLoad || 0),
+      essentialLoad: Number(telemetry.essentialLoad || 0),
+      nonEssentialLoad: Number(telemetry.nonEssentialLoad || 0),
       actualLoad: Number(telemetry.actualLoad || 0),
       netPower: Number(telemetry.netPower || 0),
-
+      excessSolarPower: Number(telemetry.excessSolarPower || 0),
+      powerDeficit: Number(telemetry.powerDeficit || 0),
       battery: Number(telemetry.battery || 0),
       batteryEnergy: Number(telemetry.batteryEnergy || 0),
-
+      batteryVoltage: Number(telemetry.batteryVoltage || 0),
+      batteryPower: Number(telemetry.batteryPower || 0),
       sunlight: Number(telemetry.sunlight || 0),
       solarVoltage: Number(telemetry.solarVoltage || 0),
       solarCurrent: Number(telemetry.solarCurrent || 0),
     }
-
-    setHistory((previous) => {
-      return [...previous, point].slice(-30)
-    })
   }
 
-  
-
-  
+  const [history, setHistory] = useState([])
+  const [connectionStatus, setConnectionStatus] =
+    useState("connecting")
+  const [lastUpdate, setLastUpdate] = useState(null)
+  const [secondsAgo, setSecondsAgo] = useState(0)
 
   useEffect(() => {
-    if (!normalizedInitialHistory.length) return
-
-    const latest = normalizedInitialHistory[normalizedInitialHistory.length - 1]
-
     setData({
       ...initialData,
-      ...latest,
       espId,
     })
+    setHistory([])
+    setLastUpdate(null)
   }, [espId])
-
-  
 
   useEffect(() => {
     if (!socket) {
@@ -513,15 +174,41 @@ export default function SolarDetailsPage() {
           return
         }
 
+        const formatted = formatTelemetry(telemetry)
+
         const updatedData = {
           ...initialData,
-          ...telemetry,
+          ...formatted,
           espId,
         }
 
         setData(updatedData)
-        setLastUpdate(Date.now())
-        addHistoryPoint(updatedData)
+        setLastUpdate(formatted.historyTimestamp)
+
+        setHistory((previous) => {
+          const combined = [...previous, formatted]
+          const now = Date.now()
+
+          const unique = Array.from(
+            new Map(
+              combined.map((item) => [
+                item._id ||
+                  `${item.historyTimestamp}-${item.espId}`,
+                item,
+              ])
+            ).values()
+          )
+
+          return unique
+            .filter(
+              (item) =>
+                now - item.historyTimestamp <= 10000
+            )
+            .sort(
+              (a, b) =>
+                a.historyTimestamp - b.historyTimestamp
+            )
+        })
       } catch (error) {
         console.error(
           "Invalid solar telemetry:",
@@ -532,41 +219,114 @@ export default function SolarDetailsPage() {
 
     socket.on("connect", handleConnect)
     socket.on("disconnect", handleDisconnect)
-
-    
-    socket.on("telemetry", handleTelemetry)
+    socket.on("solar_telemetry", handleTelemetry)
 
     if (socket.connected) {
       setConnectionStatus("connected")
     }
 
+    const fetchRecentTelemetry = async () => {
+      try {
+        const response = await axios.get(
+          `${server}/solar-esp/telemetry/${encodeURIComponent(espId)}`,
+          {
+            withCredentials: true,
+          }
+        )
+
+        const recentData = response.data?.data || []
+
+        const formattedHistory = recentData
+          .map((item) => formatTelemetry(item))
+          .filter(
+            (item) =>
+              Date.now() - item.historyTimestamp <= 10000
+          )
+          .sort(
+            (a, b) =>
+              a.historyTimestamp - b.historyTimestamp
+          )
+
+        setHistory((previous) => {
+          const combined = [...formattedHistory, ...previous]
+          const now = Date.now()
+
+          const unique = Array.from(
+            new Map(
+              combined.map((item) => [
+                item._id ||
+                  `${item.historyTimestamp}-${item.espId}`,
+                item,
+              ])
+            ).values()
+          )
+
+          return unique
+            .filter(
+              (item) =>
+                now - item.historyTimestamp <= 10000
+            )
+            .sort(
+              (a, b) =>
+                a.historyTimestamp - b.historyTimestamp
+            )
+        })
+
+        if (formattedHistory.length > 0) {
+          const latest =
+            formattedHistory[formattedHistory.length - 1]
+
+          setData({
+            ...initialData,
+            ...latest,
+            espId,
+          })
+
+          setLastUpdate(latest.historyTimestamp)
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch recent solar telemetry:",
+          error
+        )
+      }
+    }
+
+    fetchRecentTelemetry()
+
     return () => {
       socket.off("connect", handleConnect)
       socket.off("disconnect", handleDisconnect)
-      socket.off("telemetry", handleTelemetry)
+      socket.off("solar_telemetry", handleTelemetry)
     }
   }, [socket, espId])
 
-  
-
   useEffect(() => {
     const timer = setInterval(() => {
+      const now = Date.now()
+
+      setHistory((previous) =>
+        previous.filter(
+          (item) =>
+            now - item.historyTimestamp <= 10000
+        )
+      )
+
       if (!lastUpdate) {
         setSecondsAgo(0)
         return
       }
 
       setSecondsAgo(
-        Math.floor(
-          (Date.now() - lastUpdate) / 1000
+        Math.max(
+          0,
+          Math.floor((now - lastUpdate) / 1000)
         )
       )
     }, 1000)
 
     return () => clearInterval(timer)
   }, [lastUpdate])
-
-  
 
   const power = (value) =>
     `${Number(value || 0).toFixed(2)} W`
@@ -607,7 +367,6 @@ export default function SolarDetailsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-black">
 
-      {}
 
       <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b border-emerald-200 dark:border-emerald-800 bg-white/80 dark:bg-black backdrop-blur-sm mt-12 md:mt-0 lg:mt-0">
 
@@ -649,7 +408,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
@@ -681,14 +439,12 @@ export default function SolarDetailsPage() {
         </div>
       </div>
 
-      {}
 
       <div className="overflow-y-auto">
 
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:px-8">
 
-          {}
-
+    
           <div className="flex items-center justify-end mb-4 text-xs sm:text-sm text-gray-500 dark:text-gray-500">
 
             <Clock className="h-4 w-4 mr-2" />
@@ -699,11 +455,9 @@ export default function SolarDetailsPage() {
 
           </div>
 
-          {}
-
+    
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-4 sm:mb-6">
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-white dark:bg-black hover:shadow-lg transition-all duration-300">
 
@@ -725,7 +479,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-white dark:bg-black hover:shadow-lg transition-all duration-300">
 
@@ -743,7 +496,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-white dark:bg-black hover:shadow-lg transition-all duration-300">
 
@@ -768,7 +520,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-white dark:bg-black hover:shadow-lg transition-all duration-300">
 
@@ -786,7 +537,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-white dark:bg-black hover:shadow-lg transition-all duration-300">
 
@@ -804,7 +554,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-white dark:bg-black hover:shadow-lg transition-all duration-300">
 
@@ -824,8 +573,7 @@ export default function SolarDetailsPage() {
 
           </div>
 
-          {}
-
+    
           <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black mb-4 sm:mb-6">
 
             <div className="p-4 sm:p-6 border-b border-emerald-200 dark:border-emerald-800">
@@ -866,8 +614,7 @@ export default function SolarDetailsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                {}
-
+    
                 <div className="p-5 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 text-center">
 
                   <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
@@ -889,8 +636,7 @@ export default function SolarDetailsPage() {
 
                 </div>
 
-                {}
-
+    
                 <div className="p-5 rounded-lg bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 text-center">
 
                   <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
@@ -911,8 +657,7 @@ export default function SolarDetailsPage() {
 
                 </div>
 
-                {}
-
+    
                 <div className="p-5 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 text-center">
 
                   <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
@@ -935,8 +680,7 @@ export default function SolarDetailsPage() {
 
               </div>
 
-              {}
-
+  
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
 
                 <div className="p-3 rounded-md border border-emerald-200 dark:border-emerald-800">
@@ -980,8 +724,7 @@ export default function SolarDetailsPage() {
             </div>
           </div>
 
-          {}
-
+    
           <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black mb-4 sm:mb-6">
 
             <div className="p-4 sm:p-6 border-b border-emerald-200 dark:border-emerald-800">
@@ -1048,15 +791,7 @@ export default function SolarDetailsPage() {
                       isAnimationActive={false}
                     />
 
-                    {/* <Line
-                      type="monotone"
-                      dataKey="requestedLoad"
-                      name="Requested Load"
-                      stroke="var(--chart-1)"
-                      strokeWidth={2}
-                      dot={false}
-                      isAnimationActive={false}
-                    /> */}
+                    
 
                     <Line
                       type="monotone"
@@ -1086,11 +821,9 @@ export default function SolarDetailsPage() {
             </div>
           </div>
 
-          {}
-
+    
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black">
 
@@ -1190,7 +923,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black">
 
@@ -1245,16 +977,7 @@ export default function SolarDetailsPage() {
 
                       <Legend />
 
-                      {/* <Line
-                        type="monotone"
-                        dataKey="requestedLoad"
-                        name="Requested Load"
-                        stroke="var(--chart-1)"
-                        strokeWidth={2}
-                        dot={{ r: 2 }}
-                        activeDot={{ r: 4 }}
-                        isAnimationActive={false}
-                      /> */}
+                      
 
                       <Line
                         type="monotone"
@@ -1297,7 +1020,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black">
 
@@ -1387,7 +1109,6 @@ export default function SolarDetailsPage() {
 
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black">
 
@@ -1500,11 +1221,9 @@ export default function SolarDetailsPage() {
 
           </div>
 
-          {}
-
+    
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black">
 
@@ -1530,8 +1249,7 @@ export default function SolarDetailsPage() {
 
               <div className="p-4 sm:p-6">
 
-                {}
-
+    
                 <div className="flex items-center gap-5">
 
                   <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0">
@@ -1589,8 +1307,7 @@ export default function SolarDetailsPage() {
 
                 </div>
 
-                {}
-
+    
                 <div className="grid grid-cols-2 gap-3 mt-6">
 
                   <div className="p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/50">
@@ -1652,7 +1369,6 @@ export default function SolarDetailsPage() {
               </div>
             </div>
 
-            {}
 
             <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black">
 
@@ -1812,8 +1528,7 @@ export default function SolarDetailsPage() {
 
           </div>
 
-          {}
-
+    
           <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg hover:shadow-lg transition-all duration-300 bg-white dark:bg-black mb-4 sm:mb-6">
 
             <div className="p-4 sm:p-6 border-b border-emerald-200 dark:border-emerald-800">
@@ -1904,8 +1619,7 @@ export default function SolarDetailsPage() {
 
               </div>
 
-              {}
-
+  
               <div className="mt-5 pt-4 border-t border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
 
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
