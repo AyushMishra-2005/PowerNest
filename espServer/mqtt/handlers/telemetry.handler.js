@@ -1,3 +1,5 @@
+import axios from 'axios';
+import server from '../../envirnoment.js';
 export const handleTelemetry = async (topic, payload) => {
   try {
     const data = JSON.parse(payload);
@@ -6,9 +8,15 @@ export const handleTelemetry = async (topic, payload) => {
 
     const espId = topicParts[1];
 
-    // console.log("PowerNest Telemetry");
     console.log("ESP ID:", espId);
-    console.log(data);
+
+    await axios.post(
+      `${server}/main-server/telemetry`,
+      {
+        espId,
+        ...data
+      }
+    );
 
   } catch (err) {
     console.log("Telemetry error:", err.message);
