@@ -5,6 +5,8 @@ import redis from '../config/redis.js'
 import User from "../models/user.model.js";
 import { emailApi } from '../config/brevo.config.js'
 import {generateSecurityVoice} from '../services/tts.service.js'
+import SolarESP from "../models/solarEsp.model.js";
+import Telemetry from "../models/telemetry.model.js";
 
 export const findRoomEspId = async (req, res) => {
   const { sensorEspId, pin, payload } = req.body;
@@ -400,6 +402,90 @@ export const getActivePins = async (req, res) => {
     });
   }
 }
+
+
+
+export const receiveTelemetry = async (req, res) => {
+  try {
+    const data = req.body;
+
+    const solarESP = await SolarESP.findOne({
+      espId: data.espId,
+      active: true,
+    });
+
+    if (!solarESP) {
+      return res.status(404).json({
+        success: false,
+        message: "Solar ESP not found or inactive",
+      });
+    }
+
+    const userId = solarESP.userId;
+
+    console.log("User ID:", userId);
+
+    const { espId, ...telemetryData } = data;
+
+    const telemetry = await Telemetry.create({
+      solarEspId: solarESP._id,
+      ...telemetryData,
+    });
+
+    console.log("Telemetry stored:", telemetry._id);
+
+    const userSocketId = getUserSocketId(userId);
+
+    if (userSocketId) {
+      io.to(userSocketId).emit("solar_telemetry", {
+        ...telemetry.toObject(),
+        espId: solarESP.espId,
+      });
+
+      console.log(
+        `Telemetry sent to socket: ${userSocketId}`
+      );
+    } else {
+      console.log(
+        `User ${userId} is not connected`
+      );
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Telemetry stored successfully",
+      telemetryId: telemetry._id,
+    });
+
+  } catch (err) {
+    console.error(
+      "Telemetry error:",
+      err.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
